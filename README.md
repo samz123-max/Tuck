@@ -1,173 +1,48 @@
-> **Tuck experimental fork:** See [the Tuck README](README-Tuck.md) for the redesigned application, installation and validation. The original Maccy documentation follows for attribution and unchanged workflows.
+# Tuck
 
-> [!WARNING]
-> **Beware of fake websites impersonating Maccy.** Malicious sites (such as `maccyapp.net` and `maccyapp.com`) distribute malware disguised as Maccy. [**maccy.app**](https://maccy.app) is the **only** official website.
+**A happy little home for everything you copy.** Tuck is an experimental macOS redesign of [Maccy](https://github.com/p0deje/Maccy), built from its existing native application rather than a replacement clipboard engine.
 
-<img width="128px" src="https://maccy.app/img/maccy/Logo.png" alt="Logo" />
+## What changed
 
-# [Maccy](https://maccy.app)
+- A clearer header, focused search field and native All / Text / Links / Images control.
+- Visible pin and unpin buttons, a labelled Pinned area, and the existing pin shortcuts and ordering options.
+- More comfortable row spacing, restrained native materials, readable selection across system accent colours, and accessibility labels on new controls.
+- A new name and original icon featuring paper slips gathered in a small teal holder.
+- A playful menu-bar icon family: Pocket by default, with Peek, Buddy, and Spark alternatives.
+- A modern native Settings window with three approachable sections and power-user controls kept behind Advanced Settings.
 
-[![Downloads](https://img.shields.io/github/downloads/p0deje/Maccy/total.svg)](https://github.com/p0deje/Maccy/releases/latest)
-[![Build Status](https://img.shields.io/bitrise/716921b669780314/master?token=3pMiCb5dpFzlO-7jTYtO3Q)](https://app.bitrise.io/app/716921b669780314)
+Categories refine the existing search. Links are complete HTTP, HTTPS or email links; text containing a link remains Text. Images are recognised by their clipboard formats. Files and other supported formats remain available in All. Classification is local, deterministic, cached only in memory, and adds no stored fields or migration.
 
-Maccy is a lightweight clipboard manager for macOS. It keeps the history of what you copy
-and lets you quickly navigate, search, and use previous clipboard contents.
+## Still Maccy underneath
 
-Maccy works on macOS Sonoma 14 or higher.
+Clipboard capture, deduplication, paste and formatting actions, exclusion rules, pin letters, keyboard shortcuts, history limits, preferences and SwiftData models retain the upstream implementations. Existing exact, fuzzy, mixed and regular-expression search preferences remain supported. No account, telemetry, service, AI classifier or runtime dependency was added. Existing on-device image text recognition remains intact.
 
-<!-- vim-markdown-toc GFM -->
+Tuck uses its own `app.tuck.clipboard` bundle identifier. Existing local development history and preferences can be transferred once with the documented migration tool; the original Maccy container is left intact as a fallback. Quit Maccy before running Tuck and run one version at a time. Tuck targets Apple Silicon and macOS 14 or later, using native glass on macOS 26 and native material fallbacks on earlier systems.
 
-* [Features](#features)
-* [Install](#install)
-* [Usage](#usage)
-* [Advanced](#advanced)
-  * [Ignore Copied Items](#ignore-copied-items)
-  * [Ignore Custom Copy Types](#ignore-custom-copy-types)
-  * [Speed up Clipboard Check Interval](#speed-up-clipboard-check-interval)
-* [FAQ](#faq)
-  * [Why doesn't it paste when I select an item in history?](#why-doesnt-it-paste-when-i-select-an-item-in-history)
-  * [When assigning a hotkey to open Maccy, it says that this hotkey is already used in some system setting.](#when-assigning-a-hotkey-to-open-maccy-it-says-that-this-hotkey-is-already-used-in-some-system-setting)
-  * [How to restore hidden footer?](#how-to-restore-hidden-footer)
-  * [How to ignore copies from Universal Clipboard?](#how-to-ignore-copies-from-universal-clipboard)
-  * [My keyboard shortcut stopped working in password fields. How do I fix this?](#my-keyboard-shortcut-stopped-working-in-password-fields-how-do-i-fix-this)
-* [Translations](#translations)
-* [Motivation](#motivation)
-* [License](#license)
+Automatic upstream updates are disabled for this experiment so Maccy's updater cannot replace Tuck with the original app. The stored preference is retained; the update control explains the experimental distribution. Updates to Tuck are manual.
 
-<!-- vim-markdown-toc -->
+The inactive Sparkle updater framework is not bundled. The release keeps Hardened Runtime enabled and needs no developer tools or external runtime files.
 
-## Features
+## Installation and signing
 
-* Lightweight and fast
-* Keyboard-first
-* Secure and private
-* Native UI
-* Open source and free
+The Tuck release DMG will contain Tuck and an Applications shortcut. Drag Tuck to Applications, then open it there. Grant the normal Accessibility permission if you use automatic paste. Do not run it alongside Maccy or the earlier redesign build.
 
-## Install
+You can also copy the complete `Tuck.app` bundle from Applications to another Apple Silicon Mac. Clipboard history and preferences are separate local data; copying the app does not copy them. Additional UI acceptance testing is being performed by the project owner.
 
-Download the latest version from the [releases](https://github.com/p0deje/Maccy/releases/latest) page, or use [Homebrew](https://brew.sh/):
+Packaging and signing will be revalidated as Tuck in Phase 4. The earlier redesign release was signed with the project owner’s Apple Development certificate; it was a testing build, not Developer ID signed or notarised. Distribution to other Macs still requires Developer ID signing and Apple notarisation for the conventional Gatekeeper experience. No security setting is disabled by this project.
+
+## Development
+
+Build and test Tuck with the Tuck scheme and Swift module:
 
 ```sh
-brew install maccy
+./tools/xcode.sh -project Tuck.xcodeproj -scheme Tuck -configuration Debug \
+  -destination 'platform=macOS,arch=arm64' CODE_SIGN_IDENTITY=- \
+  CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= test
 ```
 
-## Usage
+See [architecture](docs/redesign/ARCHITECTURE.md) and the [historical validation record](docs/redesign/VALIDATION.md), including captures of the earlier working identity and the baseline test comparison.
 
-1. <kbd>SHIFT (⇧)</kbd> + <kbd>COMMAND (⌘)</kbd> + <kbd>C</kbd> to popup Maccy or click on its icon in the menu bar.
-2. Type what you want to find.
-3. To select the history item you wish to copy, press <kbd>ENTER</kbd>, or click the item, or use <kbd>COMMAND (⌘)</kbd> + `n` shortcut.
-4. To choose the history item and paste, press <kbd>OPTION (⌥)</kbd> + <kbd>ENTER</kbd>, or <kbd>OPTION (⌥)</kbd> + <kbd>CLICK</kbd> the item, or use <kbd>OPTION (⌥)</kbd> + `n` shortcut.
-5. To choose the history item and paste without formatting, press <kbd>OPTION (⌥)</kbd> + <kbd>SHIFT (⇧)</kbd> + <kbd>ENTER</kbd>, or <kbd>OPTION (⌥)</kbd> + <kbd>SHIFT (⇧)</kbd> + <kbd>CLICK</kbd> the item, or use <kbd>OPTION (⌥)</kbd> + <kbd>SHIFT (⇧)</kbd> + `n` shortcut.
-6. To delete the history item, press <kbd>OPTION (⌥)</kbd> + <kbd>DELETE (⌫)</kbd>.
-7. To see the full text of the history item, wait a couple of seconds for tooltip.
-8. To pin the history item so that it remains on top of the list, press <kbd>OPTION (⌥)</kbd> + <kbd>P</kbd>. The item will be moved to the top with a random but permanent keyboard shortcut. To unpin it, press <kbd>OPTION (⌥)</kbd> + <kbd>P</kbd> again.
-9. To clear all unpinned items, select _Clear_ in the menu, or press <kbd>OPTION (⌥)</kbd> + <kbd>COMMAND (⌘)</kbd> + <kbd>DELETE (⌫)</kbd>. To clear all items including pinned, select _Clear_ in the menu with  <kbd>OPTION (⌥)</kbd> pressed, or press <kbd>SHIFT (⇧)</kbd> + <kbd>OPTION (⌥)</kbd> + <kbd>COMMAND (⌘)</kbd> + <kbd>DELETE (⌫)</kbd>.
-10. To disable Maccy and ignore new copies, click on the menu icon with <kbd>OPTION (⌥)</kbd> pressed.
-11. To ignore only the next copy, click on the menu icon with <kbd>OPTION (⌥)</kbd> + <kbd>SHIFT (⇧)</kbd> pressed.
-12. To customize the behavior, check "Preferences…" window, or press <kbd>COMMAND (⌘)</kbd> + <kbd>,</kbd>.
+## Attribution
 
-## Advanced
-
-### Ignore Copied Items
-
-You can tell Maccy to ignore all copied items:
-
-```sh
-defaults write app.tuck.clipboard ignoreEvents true # default is false
-```
-
-This is useful if you have some workflow for copying sensitive data. You can set `ignoreEvents` to true, copy the data and set `ignoreEvents` back to false.
-
-You can also click the menu icon with <kbd>OPTION (⌥)</kbd> pressed. To ignore only the next copy, click with <kbd>OPTION (⌥)</kbd> + <kbd>SHIFT (⇧)</kbd> pressed.
-
-### Ignore Custom Copy Types
-
-By default Maccy will ignore certain copy types that are considered to be confidential
-or temporary. The default list always include the following types:
-
-* `org.nspasteboard.TransientType`
-* `org.nspasteboard.ConcealedType`
-* `org.nspasteboard.AutoGeneratedType`
-
-Also, default configuration includes the following types but they can be removed
-or overwritten:
-
-* `com.agilebits.onepassword`
-* `com.typeit4me.clipping`
-* `de.petermaurer.TransientPasteboardType`
-* `Pasteboard generator type`
-* `net.antelle.keeweb`
-
-You can add additional custom types using settings.
-To find what custom types are used by an application, you can use
-free application [Pasteboard-Viewer](https://github.com/sindresorhus/Pasteboard-Viewer).
-Simply download the application, open it, copy something from the application you
-want to ignore and look for any custom types in the left sidebar. [Here is an example
-of using this approach to ignore Adobe InDesign](https://github.com/p0deje/Maccy/issues/125).
-
-### Speed up Clipboard Check Interval
-
-By default, Maccy checks clipboard every 500 ms, which should be enough for most users. If you want
-to speed it up, you can change it with `defaults`:
-
-```sh
-defaults write app.tuck.clipboard clipboardCheckInterval 0.1 # 100 ms
-```
-
-## FAQ
-
-### Why doesn't it paste when I select an item in history?
-
-1. Make sure you have "Paste automatically" enabled in Preferences.
-2. Make sure "Maccy" is added to System Settings -> Privacy & Security -> Accessibility.
-
-### When assigning a hotkey to open Maccy, it says that this hotkey is already used in some system setting.
-
-1. Open System settings -> Keyboard -> Keyboard Shortcuts.
-2. Find where that hotkey is used. For example, "Convert text to simplified Chinese" is under Services -> Text.
-3. Disable that hotkey or remove assigned combination ([screenshot](https://github.com/p0deje/Maccy/assets/576152/446719e6-c3e5-4eb0-95fb-5a811066487f)).
-4. Restart Maccy.
-5. Assign hotkey in Maccy settings.
-
-### How to restore hidden footer?
-
-1. Open Maccy window.
-2. Press <kbd>COMMAND (⌘)</kbd> + <kbd>,</kbd> to open preferences.
-3. Enable footer in Appearance section.
-
-If for some reason it doesn't work, run the following command in Terminal.app:
-
-```sh
-defaults write app.tuck.clipboard showFooter 1
-```
-
-### How to ignore copies from [Universal Clipboard](https://support.apple.com/en-us/102430)?
-
-1. Open Preferences -> Ignore -> Pasteboard Types.
-2. Add `com.apple.is-remote-clipboard`.
-
-### My keyboard shortcut stopped working in password fields. How do I fix this?
-
-If your shortcut produces a character (like `Option+C` → "ç"), macOS security may block it in password fields. Use [Karabiner-Elements](https://karabiner-elements.pqrs.org/) to remap your shortcut to a different combination like `Cmd+Shift+C`. [See detailed solution](docs/keyboard-shortcut-password-fields.md).
-
-## Translations
-
-The translations are hosted in [Weblate](https://hosted.weblate.org/engage/maccy/).
-You can use it to suggest changes in translations and localize the application to a new language.
-
-[![Translation status](https://hosted.weblate.org/widget/maccy/multi-auto.svg)](https://hosted.weblate.org/engage/maccy/)
-
-## Motivation
-
-There are dozens of similar applications out there, so why build another?
-Over the past years since I moved from Linux to macOS, I struggled to find
-a clipboard manager that is as free and simple as [Parcellite](http://parcellite.sourceforge.net),
-but I couldn't. So I've decided to build one.
-
-Also, I wanted to learn Swift and get acquainted with macOS application development.
-
-
-## License
-
-[MIT](./LICENSE)
+Derived from Maccy by Alex (p0deje) and its contributors. Original copyright and the [MIT licence](LICENSE) are retained. Tuck is an independent experimental fork, not an official Maccy release. Existing third-party acknowledgements remain included.

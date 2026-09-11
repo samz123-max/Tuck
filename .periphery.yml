@@ -1,6 +1,6 @@
-project: Maccy.xcodeproj
+project: Tuck.xcodeproj
 retain_objc_accessible: true
 schemes:
-- Maccy
+- Tuck
 targets:
-- Maccy
+- Tuck

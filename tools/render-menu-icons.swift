@@ -61,7 +61,7 @@ func render(source: URL, destination: URL, pixels: Int) throws {
 
 for icon in icons {
   let source = root.appendingPathComponent("docs/redesign/tuck/menu-icons/\(icon.source).svg")
-  let destination = root.appendingPathComponent("Maccy/Assets.xcassets/\(icon.asset).imageset", isDirectory: true)
+  let destination = root.appendingPathComponent("Tuck/Assets.xcassets/\(icon.asset).imageset", isDirectory: true)
   try fileManager.createDirectory(at: destination, withIntermediateDirectories: true)
   try render(source: source, destination: destination.appendingPathComponent("\(icon.filename)-16.png"), pixels: 16)
   try render(source: source, destination: destination.appendingPathComponent("\(icon.filename)-32.png"), pixels: 32)

@@ -1,6 +1,6 @@
 
 // Shared by the untouched-source baseline and redesigned build.
-extension MaccyUITests {
+extension TuckUITests {
   func testReferenceLight() { captureReference(appearance: "Light") }
   func testReferenceDark() { captureReference(appearance: "Dark") }
 

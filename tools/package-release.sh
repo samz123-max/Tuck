@@ -7,7 +7,7 @@ release_root="${PWD:h}/artifacts/release"
 identity="${TUCK_SIGN_IDENTITY:--}"
 team="${TUCK_TEAM:-}"
 mkdir -p "$release_root"
-./tools/xcode.sh -project Maccy.xcodeproj -scheme Maccy -configuration Release \
+./tools/xcode.sh -project Tuck.xcodeproj -scheme Tuck -configuration Release \
   -destination 'platform=macOS,arch=arm64' -derivedDataPath "$release_root/DerivedData" \
   -clonedSourcePackagesDirPath "${PWD:h}/artifacts/baseline/DerivedData/SourcePackages" \
   CODE_SIGN_IDENTITY="$identity" CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="$team" \
@@ -17,6 +17,7 @@ app="$release_root/DerivedData/Build/Products/Release/Tuck.app"
 codesign --verify --deep --strict --verbose=2 "$app"
 [[ "$(lipo -archs "$app/Contents/MacOS/Tuck")" == arm64 ]]
 staging="$(mktemp -d "$release_root/DMG-contents.XXXXXX")"
+trap '/bin/rm -rf -- "$staging"' EXIT
 mkdir -p "$staging"
 ditto "$app" "$staging/Tuck.app"
 [[ -L "$staging/Applications" ]] || ln -s /Applications "$staging/Applications"
