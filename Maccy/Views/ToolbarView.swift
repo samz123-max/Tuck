@@ -72,6 +72,7 @@ struct ToolbarButton<Label: View>: View {
 
 struct ToolbarView: View {
   @State private var appState = AppState.shared
+  @Default(.pasteByDefault) private var pasteByDefault
 
   @Namespace var unionNamespace
 
@@ -108,8 +109,18 @@ struct ToolbarView: View {
   }
 
   var body: some View {
-    HStack {
+    HStack(spacing: 8) {
       if !appState.navigator.selection.isEmpty {
+        VStack(alignment: .leading, spacing: 1) {
+          Text("Preview")
+            .font(.headline)
+          if let application = appState.navigator.leadHistoryItem?.application {
+            Text(application)
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
+        }
+
         Spacer()
 
         if selectedImageItem != nil {
@@ -118,6 +129,8 @@ struct ToolbarView: View {
             Clipboard.shared.copyInMaccy(selectedImageText)
           } label: {
             Image(systemName: "text.viewfinder")
+              .frame(width: 28, height: 28)
+              .background(Color.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: 8))
           }
           .shortcutKeyHelp(key: "CopyExtractedText", tableName: "PreviewItemView")
           .disabled(selectedImageText == nil)
@@ -141,11 +154,15 @@ struct ToolbarView: View {
           replacementKey: "pinKey"
         )
         .disabled(pinActionDisabled)
+        .frame(width: 28, height: 28)
+        .background(Color.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: 8))
 
         ToolbarButton {
           appState.deleteSelection()
         } label: {
           Image(systemName: "trash")
+            .frame(width: 28, height: 28)
+            .background(Color.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: 8))
         }
         .shortcutKeyHelp(
           name: .delete,
@@ -153,6 +170,17 @@ struct ToolbarView: View {
           tableName: "PreviewItemView",
           replacementKey: "deleteKey"
         )
+
+        Button {
+          appState.history.select(appState.navigator.leadHistoryItem, flags: [])
+        } label: {
+          Label(
+            pasteByDefault ? "Paste" : "Copy",
+            systemImage: pasteByDefault ? "arrow.down.doc" : "doc.on.doc"
+          )
+        }
+        .buttonStyle(.borderedProminent)
+        .controlSize(.small)
       }
 
       if appState.navigator.pasteStackSelected {
@@ -160,6 +188,8 @@ struct ToolbarView: View {
           appState.removePasteStack()
         } label: {
           Image(systemName: "stop")
+            .frame(width: 28, height: 28)
+            .background(Color.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: 8))
         }
         .accessibilityLabel(Text("toolbar_remove_paste_stack_action"))
       }

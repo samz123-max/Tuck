@@ -5,7 +5,7 @@
 "quit_tooltip" = "アプリケーションを終了します。";
 "clear" = "クリア";
 "clear_all" = "全てクリア";
-"about" = "Maccyについて";
+"about" = "Tuckについて";
 "quit" = "終了";
 "preferences" = "設定…";
 "clear_alert_message" = "履歴をクリアしますか？";
@@ -19,7 +19,7 @@
 "system_settings_pane" = "“プライバシーとセキュリティ”";
 "system_preferences_name" = "システム環境設定の";
 "system_preferences_pane" = "“セキュリティとプライバシー”";
-"status_item_accessibility_label" = "Maccy — クリップボード履歴";
+"status_item_accessibility_label" = "Tuck — クリップボード履歴";
 "status_item_disabled_accessibility_suffix" = "一時停止中";
 "search_clear_accessibility_label" = "検索をクリア";
 "history_item_pin_action" = "ピン留め";

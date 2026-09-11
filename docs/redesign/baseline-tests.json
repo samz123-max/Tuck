@@ -1,0 +1,118 @@
+{
+  "devicesAndConfigurations" : [
+    {
+      "device" : {
+        "architecture" : "arm64",
+        "osVersion" : "26.6.2",
+        "platform" : "macOS"
+      },
+      "expectedFailures" : 0,
+      "failedTests" : 22,
+      "passedTests" : 119,
+      "skippedTests" : 0,
+      "testPlanConfiguration" : {
+        "configurationId" : "1",
+        "configurationName" : "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription" : "Maccy · Built with macOS 26.6.2",
+  "expectedFailures" : 0,
+  "failedTests" : 8,
+  "finishTime" : 1788664215.876,
+  "passedTests" : 119,
+  "result" : "Failed",
+  "skippedTests" : 0,
+  "startTime" : 1788663442.675,
+  "statistics" : [
+    {
+      "subtitle" : "143 test runs",
+      "title" : "1 configuration ran with test repetitions"
+    }
+  ],
+  "testFailures" : [
+    {
+      "failureText" : "Asynchronous wait failed: Exceeded timeout of 2 seconds, with unfulfilled expectations: \"Hook is called\".",
+      "targetName" : "MaccyTests",
+      "testIdentifier" : 8,
+      "testIdentifierString" : "ClipboardTests/testIgnoreAllApplicationsExcept()",
+      "testIdentifierURL" : "test://com.apple.xcode/Maccy/MaccyTests/ClipboardTests/testIgnoreAllApplicationsExcept",
+      "testName" : "testIgnoreAllApplicationsExcept()"
+    },
+    {
+      "failureText" : "Fulfilled inverted expectation \"Hook is called\".",
+      "targetName" : "MaccyTests",
+      "testIdentifier" : 9,
+      "testIdentifierString" : "ClipboardTests/testIgnoreApplication()",
+      "testIdentifierURL" : "test://com.apple.xcode/Maccy/MaccyTests/ClipboardTests/testIgnoreApplication",
+      "testName" : "testIgnoreApplication()"
+    },
+    {
+      "failureText" : "Asynchronous wait failed: Exceeded timeout of 3 seconds, with unfulfilled expectations: \"Expect predicate `exists == 0` for object \"copy-history-item\" Any\".",
+      "targetName" : "MaccyUITests",
+      "testIdentifier" : 95,
+      "testIdentifierString" : "MaccyUITests/testCloseWithHotkey()",
+      "testIdentifierURL" : "test://com.apple.xcode/Maccy/MaccyUITests/MaccyUITests/testCloseWithHotkey",
+      "testName" : "testCloseWithHotkey()"
+    },
+    {
+      "failureText" : "failed - Maccy did not pop up",
+      "targetName" : "MaccyUITests",
+      "testIdentifier" : 101,
+      "testIdentifierString" : "MaccyUITests/testCopyRTF()",
+      "testIdentifierURL" : "test://com.apple.xcode/Maccy/MaccyUITests/MaccyUITests/testCopyRTF",
+      "testName" : "testCopyRTF()"
+    },
+    {
+      "failureText" : "Asynchronous wait failed: Exceeded timeout of 3 seconds, with unfulfilled expectations: \"Expect predicate `BLOCKPREDICATE(0x87c73da70)` for object A88726E0-FED7-45A8-AA43-0186845022A3\".",
+      "targetName" : "MaccyUITests",
+      "testIdentifier" : 113,
+      "testIdentifierString" : "MaccyUITests/testOpenAndSelectSecondItem()",
+      "testIdentifierURL" : "test://com.apple.xcode/Maccy/MaccyUITests/MaccyUITests/testOpenAndSelectSecondItem",
+      "testName" : "testOpenAndSelectSecondItem()"
+    },
+    {
+      "failureText" : "Asynchronous wait failed: Exceeded timeout of 3 seconds, with unfulfilled expectations: \"Expect predicate `BLOCKPREDICATE(0x87c73dbc0)` for object 4975C68E-6B94-4E12-91AF-3A76C327FA42\".",
+      "targetName" : "MaccyUITests",
+      "testIdentifier" : 114,
+      "testIdentifierString" : "MaccyUITests/testOpenAndSelectThirdItem()",
+      "testIdentifierURL" : "test://com.apple.xcode/Maccy/MaccyUITests/MaccyUITests/testOpenAndSelectThirdItem",
+      "testName" : "testOpenAndSelectThirdItem()"
+    },
+    {
+      "failureText" : "Asynchronous wait failed: Exceeded timeout of 3 seconds, with unfulfilled expectations: \"Expect predicate `BLOCKPREDICATE(0x87c73dfe0)` for object C73E3C6B-44DA-4C46-85D0-FE8BEB44ABD4\".",
+      "targetName" : "MaccyUITests",
+      "testIdentifier" : 115,
+      "testIdentifierString" : "MaccyUITests/testOpenAndSelectThirdItemRepeatedPress()",
+      "testIdentifierURL" : "test://com.apple.xcode/Maccy/MaccyUITests/MaccyUITests/testOpenAndSelectThirdItemRepeatedPress",
+      "testName" : "testOpenAndSelectThirdItemRepeatedPress()"
+    },
+    {
+      "failureText" : "failed - Maccy did not pop up",
+      "targetName" : "MaccyUITests",
+      "testIdentifier" : 125,
+      "testIdentifierString" : "MaccyUITests/testTogglePopupAndCloseOnClickOutside()",
+      "testIdentifierURL" : "test://com.apple.xcode/Maccy/MaccyUITests/MaccyUITests/testTogglePopupAndCloseOnClickOutside",
+      "testName" : "testTogglePopupAndCloseOnClickOutside()"
+    }
+  ],
+  "title" : "Test - Maccy",
+  "topInsights" : [
+    {
+      "category" : "Common Failures",
+      "impact" : "25% of failures",
+      "text" : "5 runs of 2 tests failed with failed - Maccy did not pop up"
+    },
+    {
+      "category" : "Common Failures",
+      "impact" : "12% of failures",
+      "text" : "3 runs of 1 test failed with failed - Maccy did not dismiss"
+    },
+    {
+      "category" : "Common Failures",
+      "impact" : "12% of failures",
+      "text" : "3 runs of 1 test failed with Fulfilled inverted expectation \"Hook is called\"."
+    }
+  ],
+  "totalTestCount" : 127
+}

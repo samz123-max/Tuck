@@ -15,8 +15,10 @@ extension NSPasteboard.PasteboardType: Defaults.Serializable {
   // https://github.com/p0deje/Maccy/issues/429#issuecomment-1182575226
   static let modified = NSPasteboard.PasteboardType(rawValue: "x.nspasteboard.ModifiedType")
 
-  // Marks that copy was made from Maccy.
-  static let fromMaccy = NSPasteboard.PasteboardType(rawValue: "org.p0deje.Maccy")
+  // Marks that a copy was made from Tuck. The legacy marker remains recognised
+  // so clipboard entries created by earlier local builds still deduplicate.
+  static let fromTuck = NSPasteboard.PasteboardType(rawValue: AppIdentity.bundleIdentifier)
+  static let fromMaccy = NSPasteboard.PasteboardType(rawValue: AppIdentity.legacyBundleIdentifier)
 
   // Types that indicate Microsoft Word bookmarks (links).
   static let microsoftObjectLink = NSPasteboard.PasteboardType(rawValue: "com.microsoft.ObjectLink")

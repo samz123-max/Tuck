@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Tuck — Menu bar design proof</title>
+<style>
+  :root { color-scheme: light dark; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #eee9df; color: #162a2d; }
+  main { width: min(960px, calc(100vw - 40px)); margin: 40px auto; }
+  h1 { margin: 0; font-size: 34px; letter-spacing: -.8px; }
+  .tagline { margin: 7px 0 32px; color: #526164; }
+  .concepts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .concept { padding: 28px 16px 20px; border: 1px solid #d4cec2; border-radius: 18px; background: #faf7f0; text-align: center; }
+  .concept.recommended { border: 2px solid #175d66; padding: 27px 15px 19px; }
+  .concept img { width: 88px; height: 88px; }
+  h2 { margin: 15px 0 4px; font-size: 17px; }
+  .note { min-height: 34px; margin: 0; color: #687477; font-size: 12px; line-height: 1.4; }
+  .badge { display: inline-block; margin-top: 12px; border-radius: 999px; padding: 4px 8px; background: #dcebea; color: #175d66; font-size: 11px; font-weight: 650; }
+  h3 { margin: 32px 0 12px; font-size: 15px; }
+  .bar { height: 40px; margin-bottom: 12px; border-radius: 10px; display: flex; align-items: center; justify-content: flex-end; gap: 19px; padding: 0 16px; box-shadow: 0 2px 10px #0002; }
+  .bar.light { background: #f6f6f3; color: #111; }
+  .bar.dark { background: #292b2d; color: #fff; }
+  .bar span { margin-right: auto; font-size: 12px; opacity: .65; }
+  .bar img { width: 16px; height: 16px; }
+  .bar.dark img { filter: invert(1); }
+  .sizes { display: flex; align-items: end; gap: 16px; margin-top: 20px; color: #526164; font-size: 12px; }
+  .sizes img:first-of-type { width: 16px; height: 16px; }
+  .sizes img:last-of-type { width: 32px; height: 32px; }
+</style>
+<main>
+  <h1>Tuck — Menu Bar Concepts</h1>
+  <p class="tagline">A happy little home for everything you copy.</p>
+  <section class="concepts">
+    <article class="concept recommended"><img src="menu-icons/pocket.svg" alt="Pocket"><h2>Pocket</h2><p class="note">Quiet, clear and closest to the app icon.</p><span class="badge">Recommended default</span></article>
+    <article class="concept"><img src="menu-icons/peek.svg" alt="Peek"><h2>Peek</h2><p class="note">A livelier stack for busy clipboards.</p></article>
+    <article class="concept"><img src="menu-icons/buddy.svg" alt="Buddy"><h2>Buddy</h2><p class="note">Friendly personality with a subtle face.</p></article>
+    <article class="concept"><img src="menu-icons/spark.svg" alt="Spark"><h2>Spark</h2><p class="note">A polished, slightly magical variation.</p></article>
+  </section>
+  <h3>Actual menu-bar size</h3>
+  <div class="bar light"><span>Production assets · light · 16 px</span><img src="../../../Maccy/Assets.xcassets/TuckPocket.imageset/pocket-16.png" alt="Pocket"><img src="../../../Maccy/Assets.xcassets/TuckPeek.imageset/peek-16.png" alt="Peek"><img src="../../../Maccy/Assets.xcassets/TuckBuddy.imageset/buddy-16.png" alt="Buddy"><img src="../../../Maccy/Assets.xcassets/TuckSpark.imageset/spark-16.png" alt="Spark"></div>
+  <div class="bar dark"><span>Production assets · dark · 16 px</span><img src="../../../Maccy/Assets.xcassets/TuckPocket.imageset/pocket-16.png" alt="Pocket"><img src="../../../Maccy/Assets.xcassets/TuckPeek.imageset/peek-16.png" alt="Peek"><img src="../../../Maccy/Assets.xcassets/TuckBuddy.imageset/buddy-16.png" alt="Buddy"><img src="../../../Maccy/Assets.xcassets/TuckSpark.imageset/spark-16.png" alt="Spark"></div>
+  <div class="sizes"><strong>Production source check</strong><img src="../../../Maccy/Assets.xcassets/TuckPocket.imageset/pocket-16.png" alt="Pocket at 16 px"><small>16 px</small><img src="../../../Maccy/Assets.xcassets/TuckPocket.imageset/pocket-32.png" alt="Pocket at 32 px"><small>32 px</small></div>
+</main>
+</html>

@@ -16,9 +16,9 @@ struct SlideoutContentView: View {
         EmptyView()
       }
     }
-    .padding(.horizontal)
-    .padding(.bottom)
-    .padding(.top, Popup.verticalPadding)
+    .padding(.horizontal, 18)
+    .padding(.top, 16)
+    .padding(.bottom, 18)
   }
 
 }

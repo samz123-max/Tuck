@@ -9,21 +9,26 @@ struct SearchFieldView: View {
   var body: some View {
     ZStack {
       RoundedRectangle(cornerRadius: Popup.cornerRadius, style: .continuous)
-        .fill(Color.secondary)
-        .opacity(0.1)
-        .frame(height: 23)
+        .fill(Color(nsColor: .textBackgroundColor).opacity(0.72))
+        .overlay {
+          RoundedRectangle(cornerRadius: Popup.cornerRadius)
+            .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
+        }
+        .frame(height: 38)
 
       HStack {
         Image(systemName: "magnifyingglass")
           .frame(width: 11, height: 11)
-          .padding(.leading, 5)
-          .opacity(0.8)
+          .padding(.leading, 12)
+          .foregroundStyle(.secondary)
           .accessibilityHidden(true)
 
         TextField(placeholder, text: $query)
           .disableAutocorrection(true)
           .lineLimit(1)
           .textFieldStyle(.plain)
+          .font(.system(size: 13.5))
+          .accessibilityLabel("Search clipboard history")
           .onSubmit {
             appState.select(flags: .currentModifierFlags)
           }
@@ -34,7 +39,7 @@ struct SearchFieldView: View {
           } label: {
             Image(systemName: "xmark.circle.fill")
               .frame(width: 11, height: 11)
-              .padding(.trailing, 5)
+              .padding(.trailing, 11)
           }
           .buttonStyle(.plain)
           .opacity(0.9)

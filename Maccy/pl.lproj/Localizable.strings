@@ -12,7 +12,7 @@
 "clear_tooltip" = "Wyczyść nieprzypięte pozycje\nWybierz z ⇧ aby wyczyścić wszystkie.";
 "clear" = "Wyczyść";
 "clear_alert_comment" = "Nie możesz cofnąć tej akcji.";
-"status_item_accessibility_label" = "Maccy — historia schowka";
+"status_item_accessibility_label" = "Tuck — historia schowka";
 "status_item_disabled_accessibility_suffix" = "wstrzymano";
 "search_clear_accessibility_label" = "Wyczyść wyszukiwanie";
 "history_item_pin_action" = "Przypnij";

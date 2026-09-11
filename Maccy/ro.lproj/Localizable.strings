@@ -13,8 +13,8 @@
 "search_placeholder" = "tastează pentru a căuta…";
 "clear_alert_confirm" = "Șterge";
 "active_screen" = "Ecranul activ";
-"accessibility_alert_comment" = "Acordă acces acestei aplicații în {pane}, aflat în {settings}.\n\nFă clic pe butonul +, selectează Maccy și bifează caseta de selectare de lânga aceasta.";
-"status_item_accessibility_label" = "Maccy — istoricul clipboardului";
+"accessibility_alert_comment" = "Acordă acces acestei aplicații în {pane}, aflat în {settings}.\n\nFă clic pe butonul +, selectează Tuck și bifează caseta de selectare de lânga aceasta.";
+"status_item_accessibility_label" = "Tuck — istoricul clipboardului";
 "status_item_disabled_accessibility_suffix" = "în pauză";
 "search_clear_accessibility_label" = "Șterge căutarea";
 "history_item_pin_action" = "Fixează";

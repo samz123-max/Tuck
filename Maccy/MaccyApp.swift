@@ -1,5 +1,11 @@
 import SwiftUI
 
+enum AppIdentity {
+  static let bundleIdentifier = "app.tuck.clipboard"
+  static let legacyBundleIdentifier = "org.p0deje.Maccy"
+  static var runtimeBundleIdentifier: String { Bundle.main.bundleIdentifier ?? bundleIdentifier }
+}
+
 @main
 struct MaccyApp: App {
   @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate

@@ -3,6 +3,73 @@ import Defaults
 import KeyboardShortcuts
 import Observation
 
+enum ListStyle: String, CaseIterable, Identifiable, Defaults.Serializable {
+  case compact
+  case comfortable
+  case detailed
+
+  var id: Self { self }
+
+  static var settingsLabel: String {
+    localized("ListStyle", fallback: "List style:")
+  }
+
+  var title: String {
+    let fallback = switch self {
+    case .compact: "Compact"
+    case .comfortable: "Comfortable"
+    case .detailed: "Detailed"
+    }
+    return Self.localized("ListStyle\(rawValue.capitalized)", fallback: fallback)
+  }
+
+  var settingsDescription: String {
+    let fallback = switch self {
+    case .compact: "More clipboard history at a glance."
+    case .comfortable: "Balanced spacing that is easy to scan. Tuck’s default."
+    case .detailed: "Adds the source app and relative copy time to each row."
+    }
+    return Self.localized("ListStyle\(rawValue.capitalized)Description", fallback: fallback)
+  }
+
+  var rowHeight: CGFloat {
+    switch self {
+    case .compact: 28
+    case .comfortable: 32
+    case .detailed: 42
+    }
+  }
+
+  var iconSize: CGFloat {
+    self == .compact ? 15 : 16
+  }
+
+  var rowInset: CGFloat {
+    self == .compact ? 0 : 8
+  }
+
+  var contentSpacing: CGFloat {
+    self == .compact ? 5 : 7
+  }
+
+  var titleTrailingPadding: CGFloat {
+    self == .compact ? 5 : 8
+  }
+
+  var trailingPadding: CGFloat {
+    self == .compact ? 10 : 8
+  }
+
+  var showsDetails: Bool {
+    self == .detailed
+  }
+
+  private static func localized(_ key: String, fallback: String) -> String {
+    let value = NSLocalizedString(key, tableName: "AppearanceSettings", comment: "")
+    return value == key ? fallback : value
+  }
+}
+
 enum PopupState {
   // Default; shortcut will toggle the popup
   case toggle
@@ -17,25 +84,19 @@ enum PopupState {
 
 @Observable
 class Popup {
-  static let verticalSeparatorPadding = 6.0
-  static let horizontalSeparatorPadding = 6.0
-  static let verticalPadding: CGFloat = 5
-  static let horizontalPadding: CGFloat = 5
+  static let verticalSeparatorPadding = 8.0
+  static let horizontalSeparatorPadding = 12.0
+  static let verticalPadding: CGFloat = 7
+  static let horizontalPadding: CGFloat = 8
   static let minimumPreviewHeight: CGFloat = 150
 
   // Radius used for items inset by the padding. Ensures they visually have the same curvature
   // as the menu.
-  static let cornerRadius: CGFloat = if #available(macOS 26.0, *) {
-    7
-  } else {
-    4
-  }
+  static let cornerRadius: CGFloat = 10
 
-  static let itemHeight: CGFloat = if #available(macOS 26.0, *) {
-    24
-  } else {
-    22
-  }
+  // Default height for controls that share the list-item component. History
+  // rows use the user's selected ListStyle height.
+  static let itemHeight: CGFloat = 32
 
   var needsResize = false
   var height: CGFloat = 0
@@ -46,7 +107,7 @@ class Popup {
 
   var minimumHeight: CGFloat {
     // Reserve space for 3 items
-    return suitableHeight(for: 3 * Popup.itemHeight)
+    return suitableHeight(for: 3 * Defaults[.listStyle].rowHeight)
   }
 
   private var eventsMonitor: Any?
@@ -82,6 +143,7 @@ class Popup {
   }
 
   func reset() {
+    AppState.shared.history.category = .all
     state = .toggle
     KeyboardShortcuts.enable(.popup)
   }

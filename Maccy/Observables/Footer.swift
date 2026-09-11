@@ -70,7 +70,9 @@ class Footer: ItemsContainer {
         title: "about",
         help: "about_tooltip"
       ) {
-        AppState.shared.openAbout()
+        Task { @MainActor in
+          AppState.shared.openAbout()
+        }
       },
       FooterItem(
         title: "quit",

@@ -1,6 +1,67 @@
 import Defaults
 import SwiftUI
 
+private struct FooterControl: View {
+  @Bindable var item: FooterItem
+  var systemImage: String?
+  var showsTitle = false
+
+  private func control(action: @escaping () -> Void) -> some View {
+    Button(action: action) {
+      HStack(spacing: 6) {
+        if let systemImage {
+          Image(systemName: systemImage)
+            .font(.system(size: 12, weight: .medium))
+        }
+        if showsTitle {
+          Text(LocalizedStringKey(item.title))
+            .font(.caption.weight(.medium))
+        }
+        if showsTitle, let shortcut = item.shortcuts.first {
+          KeyboardShortcutView(shortcut: shortcut)
+            .font(.caption2)
+        }
+      }
+      .foregroundStyle(item.isSelected ? Color.primary : Color.secondary)
+      .padding(.horizontal, showsTitle ? 9 : 0)
+      .frame(minWidth: 28, minHeight: 27)
+      .background(
+        item.isSelected ? SelectionStyle.background : Color.clear,
+        in: RoundedRectangle(cornerRadius: 8)
+      )
+      .contentShape(Rectangle())
+    }
+    .buttonStyle(.plain)
+    .accessibilityLabel(Text(LocalizedStringKey(item.title)))
+    .help(item.help ?? "")
+  }
+
+  @ViewBuilder
+  var body: some View {
+    if let confirmation = item.confirmation,
+       let suppressConfirmation = item.suppressConfirmation {
+      control {
+        if suppressConfirmation.wrappedValue {
+          item.action()
+        } else {
+          item.showConfirmation = true
+        }
+      }
+      .confirmationDialog(confirmation.message, isPresented: $item.showConfirmation) {
+        Text(confirmation.comment)
+        Button(confirmation.confirm, role: .destructive) {
+          item.action()
+        }
+        .accessibilityIdentifier("confirmation-confirm")
+        Button(confirmation.cancel, role: .cancel) {}
+      }
+      .dialogSuppressionToggle(isSuppressed: suppressConfirmation)
+    } else {
+      control(action: item.action)
+    }
+  }
+}
+
 struct FooterView: View {
   @Bindable var footer: Footer
 
@@ -22,14 +83,24 @@ struct FooterView: View {
     VStack(spacing: 0) {
       Divider()
         .padding(.horizontal, Popup.horizontalSeparatorPadding)
-        .padding(.bottom, Popup.verticalSeparatorPadding)
+        .opacity(0.55)
 
-      ZStack {
-        FooterItemView(item: footer.items[0])
-          .invisible(!showClear)
-        FooterItemView(item: footer.items[1])
-          .invisible(!showClearAll)
+      HStack(spacing: 4) {
+        ZStack(alignment: .leading) {
+          FooterControl(item: footer.items[0], systemImage: "trash", showsTitle: true)
+            .invisible(!showClear)
+          FooterControl(item: footer.items[1], systemImage: "trash.slash", showsTitle: true)
+            .invisible(!showClearAll)
+        }
+
+        Spacer()
+
+        FooterControl(item: footer.items[2], systemImage: "gearshape")
+        FooterControl(item: footer.items[3], systemImage: "info.circle")
+        FooterControl(item: footer.items[4], systemImage: "power")
       }
+      .padding(.horizontal, 10)
+      .padding(.vertical, 6)
       .onChange(of: modifierFlags.flags) {
         if clearAllModifiersPressed {
           showClear = false
@@ -49,14 +120,9 @@ struct FooterView: View {
           }
         }
       }
-
-      ForEach(footer.items.suffix(from: 2)) { item in
-        FooterItemView(item: item)
-      }
     }
     .invisible(!showFooter)
     .frame(maxHeight: showFooter ? nil : 0)
-    .padding(.bottom, showFooter ? Popup.verticalPadding : 0)
     .readHeight(appState, into: \.popup.footerHeight)
   }
 }

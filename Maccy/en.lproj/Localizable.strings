@@ -12,7 +12,7 @@
 "clear_alert_comment" = "You can't undo this action.";
 "clear_alert_cancel" = "Cancel";
 "clear_alert_confirm" = "Clear";
-"status_item_accessibility_label" = "Maccy — clipboard history";
+"status_item_accessibility_label" = "Tuck — clipboard history";
 "status_item_disabled_accessibility_suffix" = "paused";
 "search_clear_accessibility_label" = "Clear search";
 "history_item_pin_action" = "Pin";

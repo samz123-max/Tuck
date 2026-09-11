@@ -60,7 +60,7 @@ class HistoryItemDecoratorTests: XCTestCase {
   }
 
   func testImage() {
-    let image = NSImage(named: "StatusBarMenuImage")!
+    let image = NSImage(named: "TuckPocket")!
     let itemDecorator = historyItemDecorator(image)
     itemDecorator.sizeImages()
     XCTAssertEqual(itemDecorator.title, "")

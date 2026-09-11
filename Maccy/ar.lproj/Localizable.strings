@@ -12,7 +12,7 @@
 "clear_alert_comment" = "لا يمكنك التراجع عن هذا الإجراء.";
 "clear_alert_cancel" = "إلغاء";
 "clear_alert_confirm" = "مسح";
-"status_item_accessibility_label" = "Maccy — سجل الحافظة";
+"status_item_accessibility_label" = "Tuck — سجل الحافظة";
 "status_item_disabled_accessibility_suffix" = "متوقف مؤقتًا";
 "search_clear_accessibility_label" = "مسح البحث";
 "history_item_pin_action" = "تثبيت";

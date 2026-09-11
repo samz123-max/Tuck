@@ -10,6 +10,7 @@ struct HistoryListView: View {
   @Environment(\.scenePhase) private var scenePhase
 
   @Default(.pinTo) private var pinTo
+  @Default(.listStyle) private var listStyle
   @Default(.previewDelay) private var previewDelay
   @Default(.showFooter) private var showFooter
 
@@ -100,8 +101,55 @@ struct HistoryListView: View {
 
     ScrollView {
       ScrollViewReader { proxy in
-        MultipleSelectionListView(items: unpinnedItems) { previous, item, next, index in
-          HistoryItemView(item: item, previous: previous, next: next, index: index)
+        VStack(alignment: .leading, spacing: 5) {
+          if !unpinnedItems.isEmpty {
+            HStack {
+              Text(appState.history.category == .all ? "Recent" : appState.history.category.rawValue)
+              Spacer()
+              Text("\(unpinnedItems.count)")
+                .monospacedDigit()
+                .padding(.horizontal, 7)
+                .padding(.vertical, 2)
+                .background(Color.primary.opacity(0.055), in: Capsule())
+            }
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 18)
+            .padding(.top, 7)
+            .padding(.bottom, 3)
+          } else if pinnedItems.isEmpty {
+            VStack(spacing: 9) {
+              Image(systemName: searchQuery.isEmpty ? "tray.full" : "magnifyingglass")
+                .font(.system(size: 25, weight: .light))
+                .foregroundStyle(.tint)
+                .accessibilityHidden(true)
+              Text(searchQuery.isEmpty && appState.history.category == .all ? "Ready when you copy" : "Nothing found")
+                .font(.headline)
+              Text(
+                searchQuery.isEmpty
+                  ? "The things you copy will appear here."
+                  : "Try another word, or clear your search."
+              )
+                .font(.caption)
+                .multilineTextAlignment(.center)
+              if searchQuery.isEmpty && appState.history.category == .all {
+                Text("A happy little home for everything you copy.")
+                  .font(.caption2)
+                  .foregroundStyle(.tertiary)
+              }
+              if appState.history.category != .all {
+                Button("Show all types") { appState.history.category = .all }
+                  .controlSize(.small)
+              }
+            }
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 30)
+            .padding(.horizontal, 18)
+          }
+          MultipleSelectionListView(items: unpinnedItems) { previous, item, next, index in
+            HistoryItemView(item: item, previous: previous, next: next, index: index)
+          }
         }
         .padding(.top, scrollTopPadding)
         .padding(.bottom, scrollBottomPadding)
@@ -150,6 +198,9 @@ struct HistoryListView: View {
       .contentMargins(.bottom, scrollBottomPadding, for: .scrollIndicators)
     }
     .accessibilityIdentifier("history-scroll-view")
+    .onChange(of: listStyle) {
+      appState.popup.needsResize = true
+    }
 
     VStack(spacing: 0) {
       if bottomSeparatorVisible {

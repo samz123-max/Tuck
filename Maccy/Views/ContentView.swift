@@ -7,10 +7,15 @@ struct ContentView: View {
   @State private var scenePhase: ScenePhase = .background
 
   @FocusState private var searchFocused: Bool
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+  @Environment(\.colorSchemeContrast) private var contrast
 
   var body: some View {
     ZStack {
-      if #available(macOS 26.0, *) {
+      if reduceTransparency || contrast == .increased {
+        Color(nsColor: .windowBackgroundColor)
+      } else if #available(macOS 26.0, *) {
         GlassEffectView()
       } else {
         VisualEffectView()
@@ -57,6 +62,9 @@ struct ContentView: View {
       }
     }
     .animation(.easeInOut(duration: 0.2), value: appState.searchVisible)
+    .transaction { transaction in
+      if reduceMotion { transaction.disablesAnimations = true }
+    }
     .environment(appState)
     .environment(modifierFlags)
     .environment(\.scenePhase, scenePhase)

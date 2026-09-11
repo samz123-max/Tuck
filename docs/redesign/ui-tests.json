@@ -1,0 +1,45 @@
+{
+  "devicesAndConfigurations" : [
+    {
+      "device" : {
+        "architecture" : "arm64",
+        "osVersion" : "26.6.2",
+        "platform" : "macOS"
+      },
+      "expectedFailures" : 0,
+      "failedTests" : 0,
+      "passedTests" : 38,
+      "skippedTests" : 1,
+      "testPlanConfiguration" : {
+        "configurationId" : "1",
+        "configurationName" : "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription" : "Maccy · Built with macOS 26.6.2",
+  "expectedFailures" : 0,
+  "failedTests" : 0,
+  "finishTime" : 1788724255.252,
+  "passedTests" : 38,
+  "result" : "Passed",
+  "skippedTests" : 1,
+  "startTime" : 1788723662.351,
+  "statistics" : [
+    {
+      "subtitle" : "40 test runs",
+      "title" : "1 configuration ran with test repetitions"
+    }
+  ],
+  "testFailures" : [
+
+  ],
+  "title" : "Test - Maccy",
+  "topInsights" : [
+    {
+      "category" : "Longest Test Runs",
+      "impact" : "11% of duration",
+      "text" : "1 longest test run with outlier durations exceeding 47.46s (three standard deviations)"
+    }
+  ],
+  "totalTestCount" : 39
+}

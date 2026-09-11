@@ -13,9 +13,9 @@
 "clear_alert_comment" = "Você não pode desfazer esta ação.";
 "quit_tooltip" = "Sair do aplicativo.";
 "format_modifiers_config" = "• Selecione com %@ pressionado para copiar, limpar a formatação e colar o item.";
-"accessibility_alert_comment" = "Conceda acesso a este aplicativo em {pane}, localizado em {settings}.\n\nClique + botão, selecione Maccy e ative a caixa de seleção próxima a ele.";
+"accessibility_alert_comment" = "Conceda acesso a este aplicativo em {pane}, localizado em {settings}.\n\nClique + botão, selecione Tuck e ative a caixa de seleção próxima a ele.";
 "system_preferences_name" = "Preferências do Sistema";
-"status_item_accessibility_label" = "Maccy — histórico da área de transferência";
+"status_item_accessibility_label" = "Tuck — histórico da área de transferência";
 "status_item_disabled_accessibility_suffix" = "pausado";
 "search_clear_accessibility_label" = "Limpar pesquisa";
 "history_item_pin_action" = "Fixar";

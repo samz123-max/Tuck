@@ -9,18 +9,15 @@ struct ListHeaderView: View {
   @Environment(AppState.self) private var appState
   @Environment(\.scenePhase) private var scenePhase
 
-  @Default(.showTitle) private var showTitle
-
   var body: some View {
     HStack {
-      if showTitle {
-        Text("Maccy")
-          .foregroundStyle(.secondary)
-          .padding(.leading, 5)
-      }
-
       SearchFieldView(placeholder: "search_placeholder", query: $searchQuery)
         .focused($searchFocused)
+        .overlay {
+          RoundedRectangle(cornerRadius: Popup.cornerRadius)
+            .strokeBorder(searchFocused ? Color.accentColor.opacity(0.55) : .clear, lineWidth: 1.5)
+            .allowsHitTesting(false)
+        }
         .frame(maxWidth: .infinity)
         .onChange(of: scenePhase) {
           if scenePhase == .background && !searchQuery.isEmpty {

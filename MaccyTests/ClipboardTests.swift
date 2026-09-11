@@ -43,6 +43,11 @@ class ClipboardTests: XCTestCase {
     clipboard.clearHooks()
   }
 
+  func testTuckPasteboardIdentity() {
+    XCTAssertEqual(NSPasteboard.PasteboardType.fromTuck.rawValue, "app.tuck.clipboard")
+    XCTAssertEqual(NSPasteboard.PasteboardType.fromMaccy.rawValue, "org.p0deje.Maccy")
+  }
+
   func testChangesListenerAndAddHooks() {
     let hookExpectation = expectation(description: "Hook is called")
     clipboard.onNewCopy({ (_: HistoryItem) in
@@ -136,8 +141,9 @@ class ClipboardTests: XCTestCase {
     XCTAssertFalse(Defaults[.ignoreOnlyNextEvent])
   }
 
-  func testIgnoreApplication() {
-    Defaults[.ignoredApps] = ["com.apple.dt.Xcode", "com.apple.finder"] // Finder is on Bitrise
+  func testIgnoreApplication() throws {
+    // Match the actual foreground application when running outside Xcode or CI.
+    Defaults[.ignoredApps] = [try XCTUnwrap(NSWorkspace.shared.frontmostApplication?.bundleIdentifier)]
 
     let hookExpectation = expectation(description: "Hook is called")
     hookExpectation.isInverted = true
@@ -150,9 +156,10 @@ class ClipboardTests: XCTestCase {
     waitForExpectations(timeout: 2)
   }
 
-  func testIgnoreAllApplicationsExcept() {
+  func testIgnoreAllApplicationsExcept() throws {
     Defaults[.ignoreAllAppsExceptListed] = true
-    Defaults[.ignoredApps] = ["com.apple.dt.Xcode", "com.apple.finder"] // Finder is on Bitrise
+    // Match the actual foreground application when running outside Xcode or CI.
+    Defaults[.ignoredApps] = [try XCTUnwrap(NSWorkspace.shared.frontmostApplication?.bundleIdentifier)]
 
     let hookExpectation = expectation(description: "Hook is called")
     clipboard.onNewCopy({ (_: HistoryItem) in
@@ -218,7 +225,7 @@ class ClipboardTests: XCTestCase {
     XCTAssertEqual(pasteboard.string(forType: .string), "foo")
     XCTAssertEqual(pasteboard.data(forType: .tiff), imageData)
     XCTAssertEqual(pasteboard.string(forType: .fileURL), "file://foo.bar")
-    XCTAssertEqual(pasteboard.string(forType: .fromMaccy), "")
+    XCTAssertEqual(pasteboard.string(forType: .fromTuck), "")
     XCTAssertEqual(pasteboard.string(forType: .source), "com.foo.bar")
   }
 
@@ -226,7 +233,7 @@ class ClipboardTests: XCTestCase {
   func testCopyString() {
     clipboard.copyInMaccy("foo")
     XCTAssertEqual(pasteboard.string(forType: .string), "foo")
-    XCTAssertEqual(pasteboard.string(forType: .source), NSPasteboard.PasteboardType.fromMaccy.rawValue)
+    XCTAssertEqual(pasteboard.string(forType: .source), NSPasteboard.PasteboardType.fromTuck.rawValue)
   }
 
   @MainActor
@@ -244,7 +251,7 @@ class ClipboardTests: XCTestCase {
     item.application = "com.foo.bar"
     clipboard.copy(item, removeFormatting: true)
     XCTAssertEqual(pasteboard.string(forType: .string), "foo")
-    XCTAssertEqual(pasteboard.string(forType: .fromMaccy), "")
+    XCTAssertEqual(pasteboard.string(forType: .fromTuck), "")
     XCTAssertEqual(pasteboard.string(forType: .source), "com.foo.bar")
     XCTAssertEqual(pasteboard.string(forType: .fileURL), "file://foo.bar")
     XCTAssertNil(pasteboard.data(forType: .rtf))

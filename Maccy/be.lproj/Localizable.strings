@@ -12,7 +12,7 @@
 "search_placeholder" = "пачніце пісаць для пошуку…";
 "clear_tooltip" = "Ачысціць незамацаваныя элементы.\nВыберыце з ⇧, каб выдаліць усе.";
 "clear_all_tooltip" = "Ачысціць усе элементы.";
-"status_item_accessibility_label" = "Maccy — гісторыя буфера абмену";
+"status_item_accessibility_label" = "Tuck — гісторыя буфера абмену";
 "status_item_disabled_accessibility_suffix" = "прыпынена";
 "search_clear_accessibility_label" = "Ачысціць пошук";
 "history_item_pin_action" = "Замацаваць";

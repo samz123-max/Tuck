@@ -66,7 +66,7 @@ class Clipboard {
   func copyInMaccy(_ string: String) {
     pasteboard.clearContents()
     pasteboard.setString(string, forType: .string)
-    pasteboard.setString(NSPasteboard.PasteboardType.fromMaccy.rawValue, forType: .source)
+    pasteboard.setString(NSPasteboard.PasteboardType.fromTuck.rawValue, forType: .source)
     sync()
     checkForChangesInPasteboard()
   }
@@ -99,7 +99,7 @@ class Clipboard {
     }
     pasteboard.writeObjects(fileURLItems)
 
-    pasteboard.setString("", forType: .fromMaccy)
+    pasteboard.setString("", forType: .fromTuck)
     pasteboard.setString(item.application ?? "", forType: .source)
     sync()
 
@@ -155,7 +155,10 @@ class Clipboard {
 
     changeCount = pasteboard.changeCount
 
-    if pasteboard.pasteboardItems?.contains(where: { $0.types.contains(.fromMaccy) }) != true {
+    let appMarkers: Set<NSPasteboard.PasteboardType> = [.fromTuck, .fromMaccy]
+    if pasteboard.pasteboardItems?.contains(where: { item in
+      item.types.contains(where: appMarkers.contains)
+    }) != true {
       // External copy occurred. Stop the current paste stack.
       // Maybe queue it into the paste stack? Configurable behaviour?
       AppState.shared.history.interruptPasteStack()

@@ -5,13 +5,12 @@ import Foundation
 import Logging
 import Observation
 import Sauce
-import Settings
 import SwiftData
 
 @Observable
 class History: ItemsContainer { // swiftlint:disable:this type_body_length
   static let shared = History()
-  let logger = Logger(label: "org.p0deje.Maccy")
+  let logger = Logger(label: AppIdentity.bundleIdentifier)
 
   var items: [HistoryItemDecorator] = []
   var pasteStack: PasteStack?
@@ -19,10 +18,23 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
   var pinnedItems: [HistoryItemDecorator] { items.filter(\.isPinned) }
   var unpinnedItems: [HistoryItemDecorator] { items.filter(\.isUnpinned) }
 
+  var category: ClipboardCategory = .all {
+    didSet {
+      guard oldValue != category else { return }
+      refreshSearch()
+      AppState.shared.navigator.highlightFirst()
+      AppState.shared.popup.needsResize = true
+    }
+  }
+
+  private func refreshSearch() {
+    updateItems(search.search(string: searchQuery, within: all, category: category))
+  }
+
   var searchQuery: String = "" {
     didSet {
       throttler.throttle { [self] in
-        updateItems(search.search(string: searchQuery, within: all))
+        refreshSearch()
 
         if searchQuery.isEmpty {
           AppState.shared.navigator.select(item: unpinnedItems.first)
@@ -111,6 +123,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     limitHistorySize(to: Defaults[.size])
 
     updateShortcuts()
+    if category != .all || !searchQuery.isEmpty { refreshSearch() }
     // Ensure that panel size is proper *after* loading all items.
     Task {
       AppState.shared.popup.needsResize = true
@@ -197,6 +210,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       AppState.shared.popup.needsResize = true
     }
 
+    if category != .all || !searchQuery.isEmpty { refreshSearch() }
     return itemDecorator
   }
 
@@ -463,6 +477,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
 
     searchQuery = ""
     updateUnpinnedShortcuts()
+    if category != .all { refreshSearch() }
     if item.isUnpinned {
       AppState.shared.navigator.scrollTarget = item.id
     }

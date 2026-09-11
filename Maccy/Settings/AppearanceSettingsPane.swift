@@ -1,59 +1,67 @@
 import AppKit
-import SwiftUI
 import Defaults
-import Settings
+import SwiftUI
 
 struct AppearanceSettingsPane: View {
   @Default(.popupPosition) private var popupAt
   @Default(.popupScreen) private var popupScreen
-  @Default(.pinTo) private var pinTo
-  @Default(.imageMaxHeight) private var imageHeight
-  @Default(.openPreviewAutomatically) private var openPreviewAutomatically
-  @Default(.previewDelay) private var previewDelay
-  @Default(.highlightMatch) private var highlightMatch
+  @Default(.listStyle) private var listStyle
   @Default(.menuIcon) private var menuIcon
-  @Default(.showInStatusBar) private var showInStatusBar
-  @Default(.showSearch) private var showSearch
-  @Default(.searchVisibility) private var searchVisibility
-  @Default(.showFooter) private var showFooter
-  @Default(.windowPosition) private var windowPosition
-  @Default(.showApplicationIcons) private var showApplicationIcons
 
   @State private var screens = NSScreen.screens
 
-  private let imageHeightFormatter: NumberFormatter = {
-    let formatter = NumberFormatter()
-    formatter.minimum = 1
-    formatter.maximum = 200
-    return formatter
-  }()
-
-  private let numberOfItemsFormatter: NumberFormatter = {
-    let formatter = NumberFormatter()
-    formatter.minimum = 0
-    formatter.maximum = 100
-    return formatter
-  }()
-
-  private let titleLengthFormatter: NumberFormatter = {
-    let formatter = NumberFormatter()
-    formatter.minimum = 30
-    formatter.maximum = 200
-    return formatter
-  }()
-
-  private let previewDelayFormatter: NumberFormatter = {
-    let formatter = NumberFormatter()
-    formatter.minimum = 200
-    formatter.maximum = 100_000
-    return formatter
-  }()
-
   var body: some View {
-    Settings.Container(contentWidth: 650) {
-      Settings.Section(label: { Text("PopupAt", tableName: "AppearanceSettings") }) {
-        HStack {
-          Picker("", selection: $popupAt) {
+    TuckSettingsPage(
+      title: "Appearance",
+      subtitle: "Make Tuck feel at home without getting lost in details."
+    ) {
+      TuckSettingsCard(title: "Clipboard list") {
+        VStack(alignment: .leading, spacing: 12) {
+          Picker("List style", selection: $listStyle) {
+            ForEach(ListStyle.allCases) { style in
+              Text(style.title).tag(style)
+            }
+          }
+          .pickerStyle(.segmented)
+          .labelsHidden()
+          .accessibilityLabel("List style")
+
+          ListStylePreview(style: listStyle)
+
+          Text(listStyle.settingsDescription)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 14)
+      }
+
+      TuckSettingsCard(title: "Menu bar") {
+        TuckSettingsRow(
+          icon: "menubar.rectangle",
+          title: "Tuck icon",
+          subtitle: "Choose the little companion that lives in your menu bar."
+        ) {
+          Picker("Tuck icon", selection: $menuIcon) {
+            ForEach(MenuIcon.allCases) { icon in
+              Image(nsImage: icon.image)
+                .accessibilityLabel(Text(icon.accessibilityLabel))
+                .tag(icon)
+            }
+          }
+          .labelsHidden()
+          .controlSize(.small)
+          .frame(width: 150)
+        }
+      }
+
+      TuckSettingsCard(title: "Window") {
+        TuckSettingsRow(
+          icon: "macwindow",
+          title: "Show Tuck at",
+          subtitle: "Where the clipboard opens."
+        ) {
+          Picker("Show Tuck at", selection: $popupAt) {
             ForEach(PopupPosition.allCases) { position in
               if position == .center || position == .lastPosition, screens.count > 1 {
                 screenPicker(for: position)
@@ -63,143 +71,19 @@ struct AppearanceSettingsPane: View {
             }
           }
           .labelsHidden()
-          .frame(width: 141, alignment: .leading)
-          .help(Text("PopupAtTooltip", tableName: "AppearanceSettings"))
-          .accessibilityLabel(Text("PopupAt", tableName: "AppearanceSettings"))
-
-          if popupAt == .lastPosition {
-            Button {
-              _windowPosition.reset()
-            } label: {
-              Image(systemName: "arrow.uturn.backward.circle.fill")
-                .imageScale(.large)
-            }
-            .buttonStyle(.borderless)
-            .help(Text("PopupAtLastLocationReset", tableName: "AppearanceSettings"))
-            .disabled(windowPosition == _windowPosition.defaultValue)
-          }
+          .frame(width: 155)
         }
-      }
 
-      Settings.Section(label: { Text("PinTo", tableName: "AppearanceSettings") }) {
-        Picker("", selection: $pinTo) {
-          ForEach(PinsPosition.allCases) { position in
-            Text(position.description)
-          }
-        }
-        .labelsHidden()
-        .frame(width: 141, alignment: .leading)
-        .help(Text("PinToTooltip", tableName: "AppearanceSettings"))
-        .accessibilityLabel(Text("PinTo", tableName: "AppearanceSettings"))
-      }
+        TuckSettingsDivider()
 
-      Settings.Section(label: { Text("ImageHeight", tableName: "AppearanceSettings") }) {
-        HStack {
-          TextField("", value: $imageHeight, formatter: imageHeightFormatter)
-            .frame(width: 120)
-            .help(Text("ImageHeightTooltip", tableName: "AppearanceSettings"))
-            .accessibilityLabel(Text("ImageHeight", tableName: "AppearanceSettings"))
-          Stepper("", value: $imageHeight, in: 1...200)
+        TuckSettingsRow(
+          icon: "rectangle.on.rectangle",
+          title: "Open previews automatically",
+          subtitle: "Show a larger preview after a short pause."
+        ) {
+          Defaults.Toggle(key: .openPreviewAutomatically) { EmptyView() }
             .labelsHidden()
-            .accessibilityLabel(Text("ImageHeight", tableName: "AppearanceSettings"))
         }
-      }
-
-      Settings.Section(title: "") {
-        Defaults.Toggle(key: .openPreviewAutomatically) {
-          Text("OpenPreviewAutomatically", tableName: "AppearanceSettings")
-        }
-      }
-
-      Settings.Section(label: { Text("PreviewDelay", tableName: "AppearanceSettings") }) {
-        HStack {
-          TextField("", value: $previewDelay, formatter: previewDelayFormatter)
-            .frame(width: 120)
-            .help(Text("PreviewDelayTooltip", tableName: "AppearanceSettings"))
-            .accessibilityLabel(Text("PreviewDelay", tableName: "AppearanceSettings"))
-          Stepper("", value: $previewDelay, in: 200...100_000)
-            .labelsHidden()
-            .accessibilityLabel(Text("PreviewDelay", tableName: "AppearanceSettings"))
-        }
-        .disabled(!openPreviewAutomatically)
-      }
-
-      Settings.Section(
-        bottomDivider: true,
-        label: { Text("HighlightMatches", tableName: "AppearanceSettings") }
-      ) {
-        Picker("", selection: $highlightMatch) {
-          ForEach(HighlightMatch.allCases) { match in
-            Text(match.description)
-          }
-        }
-        .labelsHidden()
-        .frame(width: 141, alignment: .leading)
-        .help(Text("HighlightMatchesTooltip", tableName: "AppearanceSettings"))
-        .accessibilityLabel(Text("HighlightMatches", tableName: "AppearanceSettings"))
-      }
-
-      Settings.Section(title: "") {
-        Defaults.Toggle(key: .showSpecialSymbols) {
-          Text("ShowSpecialSymbols", tableName: "AppearanceSettings")
-        }
-        .help(Text("ShowSpecialSymbolsTooltip", tableName: "AppearanceSettings"))
-
-        HStack {
-          Defaults.Toggle(key: .showInStatusBar) {
-            Text("ShowMenuIcon", tableName: "AppearanceSettings")
-          }
-
-          Picker("", selection: $menuIcon) {
-            ForEach(MenuIcon.allCases) { icon in
-              Image(nsImage: icon.image)
-            }
-          }
-          .labelsHidden()
-          .scaledToFit()
-          .disabled(!showInStatusBar)
-          .controlSize(.small)
-          .accessibilityLabel(Text("ShowMenuIcon", tableName: "AppearanceSettings"))
-        }
-
-        Defaults.Toggle(key: .showRecentCopyInMenuBar) {
-          Text("ShowRecentCopyInMenuBar", tableName: "AppearanceSettings")
-        }
-        HStack {
-          Defaults.Toggle(key: .showSearch) {
-            Text("ShowSearchField", tableName: "AppearanceSettings")
-          }
-
-          Picker("", selection: $searchVisibility) {
-            ForEach(SearchVisibility.allCases) { type in
-              Text(type.description)
-            }
-          }
-          .labelsHidden()
-          .scaledToFit()
-          .disabled(!showSearch)
-          .controlSize(.small)
-          .accessibilityLabel(Text("ShowSearchField", tableName: "AppearanceSettings"))
-        }
-        Defaults.Toggle(key: .showTitle) {
-          Text("ShowTitleBeforeSearchField", tableName: "AppearanceSettings")
-        }
-        Defaults.Toggle(key: .showApplicationIcons) {
-          Text("ShowApplicationIcons", tableName: "AppearanceSettings")
-        }
-        Defaults.Toggle(key: .showHexColorSwatch) {
-          Text("ShowHexColorSwatch", tableName: "AppearanceSettings")
-        }
-        .help(Text("ShowHexColorSwatchTooltip", tableName: "AppearanceSettings"))
-
-        Defaults.Toggle(key: .showFooter) {
-          Text("ShowFooter", tableName: "AppearanceSettings")
-        }
-        Text("OpenPreferencesWarning", tableName: "AppearanceSettings")
-          .fixedSize(horizontal: false, vertical: true)
-          .opacity(showFooter ? 0 : 1)
-          .controlSize(.small)
-          .foregroundStyle(.gray)
       }
     }
     .onReceive(NotificationCenter.default.publisher(for: NSApplication.didChangeScreenParametersNotification)) { _ in
@@ -209,20 +93,17 @@ struct AppearanceSettingsPane: View {
 
   @ViewBuilder
   private func screenPicker(for position: PopupPosition) -> some View {
-    let screenBinding: Binding<Int> = Binding {
-      return popupScreen
+    let screenBinding = Binding<Int> {
+      popupScreen
     } set: {
       popupScreen = $0
       popupAt = position
     }
 
     Picker(selection: screenBinding) {
-      Text(labelForScreen(index: 0))
-        .tag(0)
-
+      Text(labelForScreen(index: 0)).tag(0)
       ForEach(screens.indices, id: \.self) { index in
-        Text(labelForScreen(index: index + 1))
-          .tag(index + 1)
+        Text(labelForScreen(index: index + 1)).tag(index + 1)
       }
     } label: {
       if popupAt == position {
@@ -236,14 +117,67 @@ struct AppearanceSettingsPane: View {
   private func labelForScreen(index screenIndex: Int) -> String {
     switch screenIndex {
     case 0:
-      return String(localized: "ActiveScreen", table: "AppearanceSettings")
-    case _:
-      return screens[screenIndex - 1].localizedName
+      String(localized: "ActiveScreen", table: "AppearanceSettings")
+    default:
+      screens[screenIndex - 1].localizedName
     }
+  }
+}
+
+private struct ListStylePreview: View {
+  let style: ListStyle
+
+  var body: some View {
+    VStack(spacing: 0) {
+      sampleRow(title: "Project notes", detail: "Notes · 2 min ago", icon: "note.text", selected: true)
+      sampleRow(title: "A useful link for later", detail: "Safari · 8 min ago", icon: "safari", selected: false)
+    }
+    .padding(6)
+    .background(Color(nsColor: .windowBackgroundColor).opacity(0.7))
+    .clipShape(.rect(cornerRadius: 10))
+    .overlay {
+      RoundedRectangle(cornerRadius: 10)
+        .stroke(Color.secondary.opacity(0.12))
+    }
+    .accessibilityHidden(true)
+  }
+
+  private func sampleRow(title: String, detail: String, icon: String, selected: Bool) -> some View {
+    HStack(spacing: style.contentSpacing) {
+      Image(systemName: icon)
+        .font(.system(size: style.iconSize - 2))
+        .frame(width: style.iconSize, height: style.iconSize)
+
+      VStack(alignment: .leading, spacing: 1) {
+        Text(title).lineLimit(1)
+        if style.showsDetails {
+          Text(detail)
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+        }
+      }
+
+      Spacer(minLength: 8)
+      Text("⌘1")
+        .font(.caption2.monospacedDigit())
+        .foregroundStyle(.secondary)
+      Image(systemName: "pin")
+        .font(.system(size: 11, weight: .medium))
+    }
+    .padding(.horizontal, style == .compact ? 8 : 10)
+    .frame(height: style.rowHeight)
+    .foregroundStyle(.primary)
+    .background(selected ? SelectionStyle.background : Color.clear)
+    .overlay {
+      RoundedRectangle(cornerRadius: Popup.cornerRadius)
+        .stroke(selected ? SelectionStyle.border : Color.clear, lineWidth: 1)
+    }
+    .clipShape(.rect(cornerRadius: Popup.cornerRadius))
+    .padding(.horizontal, style.rowInset == 0 ? 0 : 4)
   }
 }
 
 #Preview {
   AppearanceSettingsPane()
-    .environment(\.locale, .init(identifier: "en"))
+    .frame(width: 640, height: 620)
 }

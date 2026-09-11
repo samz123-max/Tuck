@@ -1,37 +1,16 @@
-import Sparkle
+import AppKit
 
 @Observable
 class SoftwareUpdater {
-  var automaticallyChecksForUpdates = false {
-    didSet {
-      updater.automaticallyChecksForUpdates = automaticallyChecksForUpdates
-    }
-  }
-
-  private var updater: SPUUpdater
-  private var automaticallyChecksForUpdatesObservation: NSKeyValueObservation?
-
-  private let updaterController = SPUStandardUpdaterController(
-    startingUpdater: true,
-    updaterDelegate: nil,
-    userDriverDelegate: nil
-  )
-
-  init() {
-    updater = updaterController.updater
-    automaticallyChecksForUpdatesObservation = updater.observe(
-      \.automaticallyChecksForUpdates,
-      options: [.initial, .new, .old]
-    ) { [unowned self] updater, change in
-      guard change.newValue != change.oldValue else {
-        return
-      }
-
-      self.automaticallyChecksForUpdates = updater.automaticallyChecksForUpdates
-    }
-  }
+  // Display the original preference without changing it. Experimental releases
+  // are installed manually and do not load an upstream network updater.
+  var automaticallyChecksForUpdates = UserDefaults.standard.bool(forKey: "SUEnableAutomaticChecks")
 
   func checkForUpdates() {
-    updater.checkForUpdates()
+    let alert = NSAlert()
+    alert.messageText = "Tuck · Experimental"
+    alert.informativeText = "Updates for this experiment are installed from a new Tuck disk image. Your clipboard history stays on this Mac."
+    alert.addButton(withTitle: "Got it")
+    alert.runModal()
   }
 }

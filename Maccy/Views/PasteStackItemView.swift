@@ -22,6 +22,7 @@ struct PasteStackItemView: View {
   var isSelected: Bool
 
   @Default(.showHexColorSwatch) private var showHexColorSwatch
+  @Default(.listStyle) private var listStyle
 
   private var colorSwatchImage: NSImage? {
     guard showHexColorSwatch else { return nil }
@@ -40,6 +41,8 @@ struct PasteStackItemView: View {
       isSelected: isSelected,
       selectionIndex: index,
       selectionAppearance: .none,
+      style: listStyle,
+      subtitle: listStyle.showsDetails ? item.application : nil,
       accessibilityLabel: item.title
     ) {
       Text(verbatim: item.title)

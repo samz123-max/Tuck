@@ -13,7 +13,7 @@ struct StorageType {
 extension Defaults.Keys {
 #if DEBUG
   // UI Tests bundle preferences
-  static let testingSuiteName = "\(Bundle.main.bundleIdentifier ?? "org.p0deje.Maccy").uitests"
+  static let testingSuiteName = "\(AppIdentity.runtimeBundleIdentifier).uitests"
 
   // When UI tests run with the `enable-testing` argument, window and pin
   // preferences are stored in a separate xcuitest bundle
@@ -49,7 +49,8 @@ extension Defaults.Keys {
   )
   static let imageMaxHeight = Key<Int>("imageMaxHeight", default: 40, suite: preferencesSuite)
   static let lastReviewRequestedAt = Key<Date>("lastReviewRequestedAt", default: Date.now, suite: preferencesSuite)
-  static let menuIcon = Key<MenuIcon>("menuIcon", default: .maccy, suite: preferencesSuite)
+  static let listStyle = Key<ListStyle>("listStyle", default: .comfortable, suite: preferencesSuite)
+  static let menuIcon = Key<MenuIcon>("menuIcon", default: .pocket, suite: preferencesSuite)
   static let migrations = Key<[String: Bool]>("migrations", default: [:], suite: preferencesSuite)
   static let numberOfUsages = Key<Int>("numberOfUsages", default: 0, suite: preferencesSuite)
   static let pasteByDefault = Key<Bool>("pasteByDefault", default: false, suite: preferencesSuite)

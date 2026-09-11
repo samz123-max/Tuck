@@ -14,6 +14,13 @@
 "PinToTop" = "Top";
 "PinToBottom" = "Bottom";
 "PinToTooltip" = "Change the location of pinned items.\nDefault: Top.";
+"ListStyle" = "List style:";
+"ListStyleCompact" = "Compact";
+"ListStyleComfortable" = "Comfortable";
+"ListStyleDetailed" = "Detailed";
+"ListStyleCompactDescription" = "More clipboard history at a glance.";
+"ListStyleComfortableDescription" = "Balanced spacing that is easy to scan. Tuck’s default.";
+"ListStyleDetailedDescription" = "Adds the source app and relative copy time to each row.";
 "ImageHeight" = "Image height:";
 "ImageHeightTooltip" = "Maximum image preview height.\nDefault: 40.\nHint: Set to 16 to look like text items.";
 "OpenPreviewAutomatically" = "Open Preview automatically";
@@ -30,7 +37,7 @@
 "ShowMenuIcon" = "Show menu icon";
 "ShowRecentCopyInMenuBar" = "Show recent copy next to menu icon";
 "ShowSearchField" = "Show search field";
-"ShowTitleBeforeSearchField" = "Show title before search field";
+"ShowTitleBeforeSearchField" = "Show Tuck heading and tagline";
 "ShowApplicationIcons" = "Show application icons";
 "ShowHexColorSwatch" = "Show hex color swatch";
 "ShowHexColorSwatchTooltip" = "Show color swatch next to hex color codes.";

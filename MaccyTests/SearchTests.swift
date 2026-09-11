@@ -237,6 +237,86 @@ class SearchTests: XCTestCase {
     return Search().search(string: string, within: items)
   }
 
+  @MainActor
+  func testClipboardClassification() {
+    func content(_ type: NSPasteboard.PasteboardType, _ value: String = "sample") -> HistoryItemContent {
+      HistoryItemContent(type: type.rawValue, value: Data(value.utf8))
+    }
+    XCTAssertEqual(ClipboardCategory.classify([content(.string, "Meeting notes")]), .text)
+    XCTAssertEqual(ClipboardCategory.classify([content(.rtf)]), .text)
+    XCTAssertEqual(ClipboardCategory.classify([content(.html)]), .text)
+    for url in ["https://apple.com", " HTTPs://apple.com/mac?ref=home\n", "mailto:hello@example.com"] {
+      XCTAssertEqual(ClipboardCategory.classify([content(.string, url)]), .links)
+    }
+    for text in ["Visit https://apple.com", "https://", "https://apple.com and more", "apple.com", "file:///tmp/a"] {
+      XCTAssertEqual(ClipboardCategory.classify([content(.string, text)]), .text)
+    }
+    XCTAssertEqual(ClipboardCategory.classify([content(.URL, "https://apple.com")]), .links)
+    for type in StorageType.images.types {
+      XCTAssertEqual(ClipboardCategory.classify([content(type), content(.string, "https://apple.com")]), .images)
+    }
+    XCTAssertNil(ClipboardCategory.classify([content(.fileURL), content(.png), content(.string)]))
+    XCTAssertNil(ClipboardCategory.classify([]))
+    XCTAssertNil(ClipboardCategory.classify([HistoryItemContent(type: "public.png")]))
+    XCTAssertNil(ClipboardCategory.classify([content(.init("custom.format"))]))
+  }
+
+  @MainActor
+  func testCategoryAndSearchComposeWithoutChangingContentsOrPins() {
+    Defaults[.searchMode] = .exact
+    let link = HistoryItemDecorator(historyItemWithTitle("https://apple.com/mac"))
+    let text = HistoryItemDecorator(historyItemWithTitle("Apple meeting notes"))
+    let photo = historyItemWithTitle("poster")
+    photo.contents = [HistoryItemContent(type: NSPasteboard.PasteboardType.png.rawValue, value: Data([1, 2, 3]))]
+    photo.pin = "b"
+    let image = HistoryItemDecorator(photo)
+    let originals = photo.contents.map(\.value)
+    let candidates = [link, text, image]
+    let engine = Search()
+    XCTAssertEqual(engine.search(string: "Apple", within: candidates, category: .links).map(\.object), [link])
+    XCTAssertEqual(engine.search(string: "Apple", within: candidates, category: .text).map(\.object), [text])
+    XCTAssertEqual(engine.search(string: "poster", within: candidates, category: .images).map(\.object), [image])
+    XCTAssertTrue(engine.search(string: "Apple", within: candidates, category: .images).isEmpty)
+    XCTAssertEqual(engine.search(string: "", within: candidates, category: .all).map(\.object), candidates)
+    XCTAssertEqual(photo.contents.map(\.value), originals)
+    XCTAssertEqual(photo.pin, "b")
+  }
+
+  @MainActor
+  func testAllCategoryPreservesEverySearchMode() {
+    let candidates = [HistoryItemDecorator(historyItemWithTitle("apple notes")),
+                      HistoryItemDecorator(historyItemWithTitle("https://apple.com"))]
+    let engine = Search()
+    for mode in Search.Mode.allCases {
+      Defaults[.searchMode] = mode
+      for query in ["", "apple", "aple", "[a-z]+", "nothing"] {
+        XCTAssertEqual(engine.search(string: query, within: candidates),
+                       engine.search(string: query, within: candidates, category: .all))
+      }
+    }
+  }
+
+  @MainActor
+  func testMixedSearchRefinesWithinCategoryBeforeFallback() {
+    Defaults[.searchMode] = .mixed
+    let text = HistoryItemDecorator(historyItemWithTitle("aple"))
+    let link = HistoryItemDecorator(historyItemWithTitle("https://apple.com"))
+    XCTAssertEqual(Search().search(string: "aple", within: [text, link], category: .links).map(\.object), [link])
+  }
+
+  @MainActor
+  func testLargeHistoryFilteringPerformance() {
+    Defaults[.searchMode] = .exact
+    let candidates = (0..<10_000).map { index in
+      HistoryItemDecorator(historyItemWithTitle(index.isMultiple(of: 2)
+        ? "https://example.com/poster/\(index)" : "Meeting notes \(index)"))
+    }
+    measure {
+      let result = Search().search(string: "poster", within: candidates, category: .links)
+      XCTAssertEqual(result.count, 5_000)
+    }
+  }
+
   // swiftlint:disable:next identifier_name
   private func range(from: Int, to: Int, in item: HistoryItemDecorator) -> Range<String.Index> {
     let startIndex = item.title.startIndex

@@ -28,6 +28,13 @@ enum SelectionAppearance {
   }
 }
 
+enum SelectionStyle {
+  static let foreground = Color.primary
+  static let secondaryForeground = Color.secondary
+  static let background = Color.accentColor.opacity(0.14)
+  static let border = Color.accentColor.opacity(0.28)
+}
+
 struct ListItemView<Title: View, ID: Hashable>: View {
   var id: ID
   var selectionId: UUID
@@ -40,6 +47,9 @@ struct ListItemView<Title: View, ID: Hashable>: View {
   var selectionIndex: Int?
   var help: LocalizedStringKey?
   var selectionAppearance: SelectionAppearance = .none
+  var drawsSelectionBackground = true
+  var style: ListStyle = .comfortable
+  var subtitle: String?
   // Complete description used when the row's visual content is hidden from accessibility.
   var accessibilityLabel: String = ""
   @ViewBuilder var title: () -> Title
@@ -58,49 +68,68 @@ struct ListItemView<Title: View, ID: Hashable>: View {
       if showIcons, let appIcon {
         VStack {
           Spacer(minLength: 0)
-          AppImageView(appImage: appIcon, size: NSSize(width: 15, height: 15))
+          AppImageView(appImage: appIcon, size: NSSize(width: style.iconSize, height: style.iconSize))
           Spacer(minLength: 0)
         }
         .padding(.leading, 4)
-        .padding(.vertical, 5)
+        .padding(.vertical, style == .compact ? 5 : 6)
       }
 
       Spacer()
-        .frame(width: showIcons ? 5 : 10)
+        .frame(width: showIcons ? style.contentSpacing : (style == .compact ? 10 : 12))
 
       if let accessoryImage {
         Image(nsImage: accessoryImage)
           .accessibilityIdentifier("copy-history-item")
           .accessibilityHidden(true)
-          .padding(.trailing, 5)
-          .padding(.vertical, 5)
+          .padding(.trailing, style.contentSpacing)
+          .padding(.vertical, style == .compact ? 5 : 6)
       }
 
       if let image {
         Image(nsImage: image)
           .accessibilityIdentifier("copy-history-item")
           .accessibilityHidden(true)
-          .padding(.trailing, 5)
-          .padding(.vertical, 5)
+          .padding(.trailing, style.contentSpacing)
+          .padding(.vertical, style == .compact ? 5 : 6)
+        if let subtitle {
+          Text(subtitle)
+            .font(.caption2)
+            .foregroundStyle(SelectionStyle.secondaryForeground)
+            .lineLimit(1)
+            .truncationMode(.tail)
+            .accessibilityHidden(true)
+            .padding(.trailing, style.titleTrailingPadding)
+        }
       } else {
-        ListItemTitleView(attributedTitle: attributedTitle, title: title)
-          .accessibilityHidden(true)
-          .padding(.trailing, 5)
+        VStack(alignment: .leading, spacing: 1) {
+          ListItemTitleView(attributedTitle: attributedTitle, title: title)
+          if let subtitle {
+            Text(subtitle)
+              .font(.caption2)
+              .foregroundStyle(SelectionStyle.secondaryForeground)
+              .lineLimit(1)
+              .truncationMode(.tail)
+          }
+        }
+        .accessibilityHidden(true)
+        .padding(.trailing, style.titleTrailingPadding)
       }
 
       Spacer()
 
-      HStack(spacing: 5) {
+      HStack(spacing: style.contentSpacing) {
         if let displaySelectionIndex {
           Text(displaySelectionIndex)
-            .font(.caption)
+            .font(.caption2.weight(.semibold))
             .frame(minWidth: 10, alignment: .center)
-            .padding(3)
+            .padding(.horizontal, 5)
+            .padding(.vertical, 3)
             .background(
-              Color.secondary.opacity(isSelected ? 0.5 : 0.8),
+              Color.primary.opacity(isSelected ? 0.1 : 0.07),
               in: Capsule()
             )
-            .foregroundStyle(Color.white)
+            .foregroundStyle(Color.secondary)
             .accessibilityHidden(true)
         }
 
@@ -116,15 +145,19 @@ struct ListItemView<Title: View, ID: Hashable>: View {
           }
         }
       }
-      .padding(.trailing, 10)
+      .padding(.trailing, style.trailingPadding)
     }
-    .frame(minHeight: Popup.itemHeight)
+    .frame(minHeight: style.rowHeight)
     .id(id)
     .frame(maxWidth: .infinity, alignment: .leading)
-    .foregroundStyle(isSelected ? Color.white : .primary)
+    .foregroundStyle(isSelected ? SelectionStyle.foreground : .primary)
     // macOS 26 broke hovering if no background is present.
     // The slight opcaity white background is a workaround
-    .background(isSelected ? Color.accentColor.opacity(0.8) : .white.opacity(0.001))
+    .background(
+      isSelected && drawsSelectionBackground
+        ? SelectionStyle.background
+        : .white.opacity(0.001)
+    )
     .clipShape(selectionAppearance.rect(cornerRadius: Popup.cornerRadius))
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(Text(accessibilityLabel))

@@ -98,7 +98,7 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     newOrigin.y += (frame.height - newSize.height)
 
     NSAnimationContext.runAnimationGroup { (context) in
-      context.duration = 0.2
+      context.duration = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion ? 0 : 0.2
       animator().setFrame(NSRect(origin: newOrigin, size: newSize), display: true)
     }
   }

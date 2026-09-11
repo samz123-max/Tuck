@@ -12,7 +12,7 @@
 "clear_alert_comment" = "Esta acción no puede deshacerse.";
 "clear_alert_cancel" = "Cancelar";
 "clear_alert_confirm" = "Limpiar";
-"status_item_accessibility_label" = "Maccy — historial del portapapeles";
+"status_item_accessibility_label" = "Tuck — historial del portapapeles";
 "status_item_disabled_accessibility_suffix" = "en pausa";
 "search_clear_accessibility_label" = "Borrar búsqueda";
 "history_item_pin_action" = "Anclar";

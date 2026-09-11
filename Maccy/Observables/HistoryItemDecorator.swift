@@ -14,6 +14,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   static var thumbnailImageSize: NSSize { NSSize(width: 340, height: Defaults[.imageMaxHeight]) }
 
   let id = UUID()
+  let category: ClipboardCategory?
 
   var title: String = ""
   var attributedTitle: AttributedString?
@@ -95,6 +96,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
 
   init(_ item: HistoryItem, shortcuts: [KeyShortcut] = []) {
     self.item = item
+    self.category = ClipboardCategory.classify(item.contents)
     self.shortcuts = shortcuts
     self.title = item.title
     self.applicationImage = ApplicationImageCache.shared.getImage(item: item)

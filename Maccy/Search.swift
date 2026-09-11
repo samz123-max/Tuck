@@ -2,6 +2,45 @@ import AppKit
 import Defaults
 import Fuse
 
+// Presentation-only classification. No schema, indexing, image decoding, or clipboard writes.
+enum ClipboardCategory: String, CaseIterable, Identifiable {
+  case all = "All"
+  case text = "Text"
+  case links = "Links"
+  case images = "Images"
+
+  var id: Self { self }
+
+  func includes(_ item: HistoryItemDecorator) -> Bool {
+    self == .all || item.category == self
+  }
+
+  static func classify(_ contents: [HistoryItemContent]) -> ClipboardCategory? {
+    let types = Set(contents.filter { $0.value != nil }.map(\.type))
+    // A copied file may carry a thumbnail or text fallback; it is still a file.
+    if types.contains(NSPasteboard.PasteboardType.fileURL.rawValue) { return nil }
+    if StorageType.images.types.contains(where: { types.contains($0.rawValue) }) { return .images }
+    for type in [NSPasteboard.PasteboardType.URL, .string] {
+      if let data = contents.first(where: { $0.type == type.rawValue })?.value,
+         data.count <= 16_384,
+         let string = String(data: data, encoding: .utf8),
+         isLink(string) { return .links }
+    }
+    if StorageType.text.types.contains(where: { types.contains($0.rawValue) }) { return .text }
+    return nil
+  }
+
+  private static func isLink(_ string: String) -> Bool {
+    let value = string.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !value.isEmpty, value.rangeOfCharacter(from: .whitespacesAndNewlines) == nil,
+          let url = URLComponents(string: value), let scheme = url.scheme?.lowercased() else { return false }
+    if scheme == "http" || scheme == "https" {
+      return !(url.host ?? "").isEmpty
+    }
+    return scheme == "mailto" && url.path.contains("@") && !url.path.hasPrefix("@")
+  }
+}
+
 class Search {
   enum Mode: String, CaseIterable, Identifiable, CustomStringConvertible, Defaults.Serializable {
     case exact
@@ -36,7 +75,8 @@ class Search {
   private let fuse = Fuse(threshold: 0.7) // threshold found by trial-and-error
   private let fuzzySearchLimit = 5_000
 
-  func search(string: String, within: [Searchable]) -> [SearchResult] {
+  func search(string: String, within: [Searchable], category: ClipboardCategory = .all) -> [SearchResult] {
+    let within = category == .all ? within : within.filter { category.includes($0) }
     guard !string.isEmpty else {
       return within.map { SearchResult(object: $0) }
     }

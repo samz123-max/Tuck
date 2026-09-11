@@ -16,6 +16,7 @@ struct FooterItemView: View {
         Text(LocalizedStringKey(item.title))
       }
     }
+    .padding(.horizontal, 8)
     .onHover { hovering in
       if hovering && appState.preview.state.isOpen {
         appState.preview.togglePreview()

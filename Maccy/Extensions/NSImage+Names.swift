@@ -10,8 +10,8 @@ extension NSImage {
 }
 
 extension NSImage.Name {
-  static let clipboard = NSImage.Name("clipboard.fill")
-  static let maccyStatusBar = NSImage.Name("StatusBarMenuImage")
-  static let scissors = NSImage.Name("scissors")
-  static let paperclip = NSImage.Name("paperclip")
+  static let tuckPocket = NSImage.Name("TuckPocket")
+  static let tuckPeek = NSImage.Name("TuckPeek")
+  static let tuckBuddy = NSImage.Name("TuckBuddy")
+  static let tuckSpark = NSImage.Name("TuckSpark")
 }

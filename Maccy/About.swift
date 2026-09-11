@@ -14,11 +14,12 @@ class About {
   }
 
   private var links: NSMutableAttributedString {
-    let string = NSMutableAttributedString(string: "Website│GitHub│Support",
-                                           attributes: [NSAttributedString.Key.foregroundColor: NSColor.labelColor])
-    string.addAttribute(.link, value: "https://maccy.app", range: NSRange(location: 0, length: 7))
-    string.addAttribute(.link, value: "https://github.com/p0deje/Maccy", range: NSRange(location: 8, length: 6))
-    string.addAttribute(.link, value: "mailto:support@maccy.app", range: NSRange(location: 15, length: 7))
+    let string = NSMutableAttributedString(
+      string: "Tuck · Experimental\nA happy little home for everything you copy.\nDerived from Maccy by Alexey Rodionov and contributors.\nMIT License · Original project",
+      attributes: [.foregroundColor: NSColor.labelColor]
+    )
+    let range = (string.string as NSString).range(of: "Original project")
+    string.addAttribute(.link, value: "https://github.com/p0deje/Maccy", range: range)
     return string
   }
 
@@ -34,9 +35,15 @@ class About {
     return credits
   }
 
-  @objc
+  @MainActor @objc
   func openAbout(_ sender: NSMenuItem?) {
+    _ = open()
+  }
+
+  @MainActor
+  func open() -> NSWindow? {
     NSApp.activate(ignoringOtherApps: true)
     NSApp.orderFrontStandardAboutPanel(options: [NSApplication.AboutPanelOptionKey.credits: credits])
+    return NSApp.keyWindow
   }
 }

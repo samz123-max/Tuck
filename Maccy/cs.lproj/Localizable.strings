@@ -14,7 +14,7 @@
 "about" = "O aplikaci";
 "copy_modifiers_config" = "• Vyber se stisknutím %@ pro zkopírování položky.";
 "format_modifiers_config" = "• Vyber se stisknutím %@ pro zkopírování, odstranění formátování a vložení položky.";
-"status_item_accessibility_label" = "Maccy — historie schránky";
+"status_item_accessibility_label" = "Tuck — historie schránky";
 "status_item_disabled_accessibility_suffix" = "pozastaveno";
 "search_clear_accessibility_label" = "Vymazat hledání";
 "history_item_pin_action" = "Připnout";

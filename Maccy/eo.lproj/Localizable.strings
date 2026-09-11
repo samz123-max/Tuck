@@ -15,8 +15,8 @@
 "copy_modifiers_config" = "• Elekti premante %@ por kopii la eron.";
 "paste_modifiers_config" = "• Elekti premante %@ por kopii kaj alglui la eron.";
 "format_modifiers_config" = "• Elekti premante %@ por kopii, forigi tekstaranĝon, alglui la eron.";
-"accessibility_alert_comment" = "Donu aliron al la aplikaĵo en {pane}, trovebla en {settings}.\n\nAlklaku la butonon +, elektu Maccy, kaj ŝaltu la elektobutonon apud ĝi.";
-"status_item_accessibility_label" = "Maccy — tonduja historio";
+"accessibility_alert_comment" = "Donu aliron al la aplikaĵo en {pane}, trovebla en {settings}.\n\nAlklaku la butonon +, elektu Tuck, kaj ŝaltu la elektobutonon apud ĝi.";
+"status_item_accessibility_label" = "Tuck — tonduja historio";
 "status_item_disabled_accessibility_suffix" = "paŭzita";
 "search_clear_accessibility_label" = "Vakigi serĉon";
 "history_item_pin_action" = "Fiksi";

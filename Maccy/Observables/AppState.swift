@@ -1,8 +1,55 @@
 import AppKit
 import Defaults
 import Foundation
-import Settings
 import SwiftUI
+
+final class DockWindowCoordinator: @unchecked Sendable {
+  typealias PolicySetter = (NSApplication.ActivationPolicy) -> Bool
+
+  private var closeObservers: [ObjectIdentifier: NSObjectProtocol] = [:]
+  private let setActivationPolicy: PolicySetter
+  private let activateApplication: () -> Void
+
+  init(
+    setActivationPolicy: @escaping PolicySetter = { NSApp.setActivationPolicy($0) },
+    activateApplication: @escaping () -> Void = { NSApp.activate(ignoringOtherApps: true) }
+  ) {
+    self.setActivationPolicy = setActivationPolicy
+    self.activateApplication = activateApplication
+  }
+
+  @MainActor
+  func prepareForWindowPresentation() {
+    _ = setActivationPolicy(.regular)
+    activateApplication()
+  }
+
+  @MainActor
+  func track(_ window: NSWindow) {
+    let identifier = ObjectIdentifier(window)
+    guard closeObservers[identifier] == nil else { return }
+
+    closeObservers[identifier] = NotificationCenter.default.addObserver(
+      forName: NSWindow.willCloseNotification,
+      object: window,
+      queue: .main
+    ) { [weak self] _ in
+      Task { @MainActor [weak self] in
+        self?.windowDidClose(identifier)
+      }
+    }
+  }
+
+  @MainActor
+  private func windowDidClose(_ identifier: ObjectIdentifier) {
+    if let observer = closeObservers.removeValue(forKey: identifier) {
+      NotificationCenter.default.removeObserver(observer)
+    }
+    if closeObservers.isEmpty {
+      _ = setActivationPolicy(.accessory)
+    }
+  }
+}
 
 @Observable
 class AppState: Sendable {
@@ -33,7 +80,8 @@ class AppState: Sendable {
   }
 
   private let about = About()
-  private var settingsWindowController: SettingsWindowController?
+  private let dockWindows = DockWindowCoordinator()
+  private var settingsWindowController: NSWindowController?
 
   init(history: History, footer: Footer) {
     self.history = history
@@ -101,84 +149,40 @@ class AppState: Sendable {
     }
   }
 
+  @MainActor
   func openAbout() {
-    about.openAbout(nil)
+    dockWindows.prepareForWindowPresentation()
+    if let window = about.open() {
+      dockWindows.track(window)
+    }
   }
 
   @MainActor
-  func openPreferences() { // swiftlint:disable:this function_body_length
+  func openPreferences() {
+    dockWindows.prepareForWindowPresentation()
     if settingsWindowController == nil {
-      let generalTitle = NSLocalizedString("Title", tableName: "GeneralSettings", comment: "")
-      let storageTitle = NSLocalizedString("Title", tableName: "StorageSettings", comment: "")
-      let appearanceTitle = NSLocalizedString("Title", tableName: "AppearanceSettings", comment: "")
-      let pinsTitle = NSLocalizedString("Title", tableName: "PinsSettings", comment: "")
-      let ignoreTitle = NSLocalizedString("Title", tableName: "IgnoreSettings", comment: "")
-      let advancedTitle = NSLocalizedString("Title", tableName: "AdvancedSettings", comment: "")
-      let toolbarTitles = [generalTitle, storageTitle, appearanceTitle, pinsTitle, ignoreTitle, advancedTitle]
-      let titleAttributes: [NSAttributedString.Key: Any] = [.font: NSFont.systemFont(ofSize: NSFont.systemFontSize)]
-      let titleWidth = toolbarTitles.reduce(CGFloat.zero) {
-        $0 + ($1 as NSString).size(withAttributes: titleAttributes).width
-      }
-      let toolbarItemSpacing: CGFloat = 24
-      let toolbarEdgeSpacing: CGFloat = 40
-      let toolbarWidth = titleWidth + CGFloat(toolbarTitles.count) * toolbarItemSpacing + toolbarEdgeSpacing
-      let minimumWidth = max(500, ceil(toolbarWidth))
-      settingsWindowController = SettingsWindowController(
-        panes: [
-          Settings.Pane(
-            identifier: Settings.PaneIdentifier.general,
-            title: generalTitle,
-            toolbarIcon: NSImage.gearshape!
-          ) {
-            GeneralSettingsPane()
-              .frame(minWidth: minimumWidth)
-          },
-          Settings.Pane(
-            identifier: Settings.PaneIdentifier.storage,
-            title: storageTitle,
-            toolbarIcon: NSImage.externaldrive!
-          ) {
-            StorageSettingsPane()
-              .frame(minWidth: minimumWidth)
-          },
-          Settings.Pane(
-            identifier: Settings.PaneIdentifier.appearance,
-            title: appearanceTitle,
-            toolbarIcon: NSImage.paintpalette!
-          ) {
-            AppearanceSettingsPane()
-              .frame(minWidth: minimumWidth)
-          },
-          Settings.Pane(
-            identifier: Settings.PaneIdentifier.pins,
-            title: pinsTitle,
-            toolbarIcon: NSImage.pincircle!
-          ) {
-            PinsSettingsPane()
-              .environment(self)
-              .modelContainer(Storage.shared.container)
-              .frame(minWidth: minimumWidth)
-          },
-          Settings.Pane(
-            identifier: Settings.PaneIdentifier.ignore,
-            title: ignoreTitle,
-            toolbarIcon: NSImage.nosign!
-          ) {
-            IgnoreSettingsPane()
-              .frame(minWidth: minimumWidth)
-          },
-          Settings.Pane(
-            identifier: Settings.PaneIdentifier.advanced,
-            title: advancedTitle,
-            toolbarIcon: NSImage.gearshape2!
-          ) {
-            AdvancedSettingsPane()
-              .frame(minWidth: minimumWidth)
-          }
-        ]
-      )
+      let rootView = GeneralSettingsPane()
+        .environment(self)
+        .modelContainer(Storage.shared.container)
+      let hostingController = NSHostingController(rootView: rootView)
+      let window = NSWindow(contentViewController: hostingController)
+      window.title = "Tuck Settings"
+      window.identifier = NSUserInterfaceItemIdentifier("TuckSettings")
+      window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
+      window.titlebarAppearsTransparent = true
+      window.titlebarSeparatorStyle = .none
+      window.toolbarStyle = .unified
+      window.setContentSize(NSSize(width: 860, height: 620))
+      window.minSize = NSSize(width: 760, height: 540)
+      window.setFrameAutosaveName("TuckSettingsWindow")
+      window.center()
+      window.isReleasedWhenClosed = false
+      settingsWindowController = NSWindowController(window: window)
     }
-    settingsWindowController?.show()
+    if let window = settingsWindowController?.window {
+      dockWindows.track(window)
+    }
+    settingsWindowController?.showWindow(nil)
     settingsWindowController?.window?.orderFrontRegardless()
   }
 

@@ -19,7 +19,7 @@
 "system_settings_pane" = "Datenschutz & Sicherheit";
 "system_preferences_name" = "Systemeinstellungen";
 "system_preferences_pane" = "Sicherheit & Datenschutz";
-"status_item_accessibility_label" = "Maccy — Zwischenablageverlauf";
+"status_item_accessibility_label" = "Tuck — Zwischenablageverlauf";
 "status_item_disabled_accessibility_suffix" = "pausiert";
 "search_clear_accessibility_label" = "Suche löschen";
 "history_item_pin_action" = "Anheften";

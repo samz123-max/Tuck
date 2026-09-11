@@ -1,128 +1,272 @@
-import SwiftUI
+import AppKit
 import Defaults
 import KeyboardShortcuts
 import LaunchAtLogin
-import Settings
+import SwiftUI
+
+enum TuckSettingsDestination: String, CaseIterable, Identifiable {
+  case general
+  case appearance
+  case privacy
+
+  var id: Self { self }
+
+  var title: String {
+    switch self {
+    case .general: "General"
+    case .appearance: "Appearance"
+    case .privacy: "Privacy & History"
+    }
+  }
+
+  var icon: String {
+    switch self {
+    case .general: "gearshape"
+    case .appearance: "paintpalette"
+    case .privacy: "hand.raised"
+    }
+  }
+}
 
 struct GeneralSettingsPane: View {
+  @State private var selection = TuckSettingsDestination.general
+  @State private var showingAdvanced = false
+
+  var body: some View {
+    NavigationSplitView {
+      VStack(spacing: 0) {
+        HStack(spacing: 11) {
+          Image(nsImage: NSApplication.shared.applicationIconImage)
+            .resizable()
+            .frame(width: 38, height: 38)
+
+          VStack(alignment: .leading, spacing: 1) {
+            Text("Tuck")
+              .font(.headline)
+            Text("A happy little home for everything you copy.")
+              .font(.caption)
+              .foregroundStyle(.secondary)
+              .lineLimit(2)
+          }
+        }
+        .padding(.horizontal, 14)
+        .padding(.top, 18)
+        .padding(.bottom, 12)
+
+        List(TuckSettingsDestination.allCases, selection: $selection) { destination in
+          Label(destination.title, systemImage: destination.icon)
+            .tag(destination)
+            .padding(.vertical, 3)
+        }
+        .listStyle(.sidebar)
+        .scrollContentBackground(.hidden)
+
+        Divider()
+
+        Button {
+          showingAdvanced = true
+        } label: {
+          Label("Advanced Settings…", systemImage: "slider.horizontal.3")
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .accessibilityIdentifier("advancedSettingsButton")
+      }
+      .navigationSplitViewColumnWidth(min: 190, ideal: 215, max: 235)
+    } detail: {
+      switch selection {
+      case .general:
+        TuckGeneralSettingsView()
+      case .appearance:
+        AppearanceSettingsPane()
+      case .privacy:
+        StorageSettingsPane()
+      }
+    }
+    .navigationSplitViewStyle(.balanced)
+    .sheet(isPresented: $showingAdvanced) {
+      AdvancedSettingsPane()
+    }
+  }
+}
+
+struct TuckGeneralSettingsView: View {
   private let notificationsURL = URL(
-    string: "x-apple.systempreferences:com.apple.preference.notifications?id=\(Bundle.main.bundleIdentifier ?? "")"
+    string: "x-apple.systempreferences:com.apple.preference.notifications?id=\(AppIdentity.runtimeBundleIdentifier)"
   )
-
-  @Default(.searchMode) private var searchMode
-
-  @State private var copyModifier = HistoryItemAction.copy.modifierFlags.description
-  @State private var pasteModifier = HistoryItemAction.paste.modifierFlags.description
-  @State private var pasteWithoutFormatting = HistoryItemAction.pasteWithoutFormatting.modifierFlags.description
 
   @State private var updater = SoftwareUpdater()
 
   var body: some View {
-    Settings.Container(contentWidth: 450) {
-      Settings.Section(title: "", bottomDivider: true) {
-        LaunchAtLogin.Toggle {
-          Text("LaunchAtLogin", tableName: "GeneralSettings")
+    TuckSettingsPage(
+      title: "General",
+      subtitle: "The essentials for a clipboard that is ready when you are."
+    ) {
+      TuckSettingsCard(title: "Everyday") {
+        TuckSettingsRow(
+          icon: "power",
+          title: "Launch at login",
+          subtitle: "Keep Tuck available after you sign in."
+        ) {
+          LaunchAtLogin.Toggle { EmptyView() }
+            .labelsHidden()
         }
-        Toggle(isOn: $updater.automaticallyChecksForUpdates) {
-          Text("CheckForUpdates", tableName: "GeneralSettings")
-        }
-        Button(
-          action: { updater.checkForUpdates() },
-          label: { Text("CheckNow", tableName: "GeneralSettings") }
-        )
-      }
 
-      Settings.Section(label: { Text("Open", tableName: "GeneralSettings") }) {
-        KeyboardShortcuts.Recorder(for: .popup, onChange: { newShortcut in
-          if newShortcut == nil {
-            // No shortcut is recorded. Remove keys monitor
-            AppState.shared.popup.deinitEventsMonitor()
-          } else {
-            // User is using shortcut. Ensure keys monitor is initialized
-            AppState.shared.popup.initEventsMonitor()
-          }
-        })
-          .help(Text("OpenTooltip", tableName: "GeneralSettings"))
-          .accessibilityLabel(Text("Open", tableName: "GeneralSettings"))
-      }
+        TuckSettingsDivider()
 
-      Settings.Section(label: { Text("Pin", tableName: "GeneralSettings") }) {
-        KeyboardShortcuts.Recorder(for: .pin)
-          .help(Text("PinTooltip", tableName: "GeneralSettings"))
-          .accessibilityLabel(Text("Pin", tableName: "GeneralSettings"))
-      }
-      Settings.Section(label: { Text("Delete", tableName: "GeneralSettings") }
-      ) {
-        KeyboardShortcuts.Recorder(for: .delete)
-          .help(Text("DeleteTooltip", tableName: "GeneralSettings"))
-          .accessibilityLabel(Text("Delete", tableName: "GeneralSettings"))
-      }
-      Settings.Section(
-        bottomDivider: true,
-        label: { Text("ShowPreview", tableName: "GeneralSettings") }
-      ) {
-        KeyboardShortcuts.Recorder(for: .togglePreview)
-          .help(Text("ShowPreviewTooltip", tableName: "GeneralSettings"))
-          .accessibilityLabel(Text("ShowPreview", tableName: "GeneralSettings"))
-      }
-
-      Settings.Section(
-        bottomDivider: true,
-        label: { Text("Search", tableName: "GeneralSettings") }
-      ) {
-        Picker("", selection: $searchMode) {
-          ForEach(Search.Mode.allCases) { mode in
-            Text(mode.description)
-          }
-        }
-        .labelsHidden()
-        .accessibilityLabel(Text("Search", tableName: "GeneralSettings"))
-        .frame(width: 180, alignment: .leading)
-      }
-
-      Settings.Section(
-        bottomDivider: true,
-        label: { Text("Behavior", tableName: "GeneralSettings") }
-      ) {
-        Defaults.Toggle(key: .pasteByDefault) {
-          Text("PasteAutomatically", tableName: "GeneralSettings")
-        }
-        .onChange(refreshModifiers)
-        .fixedSize()
-
-        Defaults.Toggle(key: .removeFormattingByDefault) {
-          Text("PasteWithoutFormatting", tableName: "GeneralSettings")
-        }
-        .onChange(refreshModifiers)
-        .fixedSize()
-
-        Text(String(
-          format: NSLocalizedString("Modifiers", tableName: "GeneralSettings", comment: ""),
-          copyModifier, pasteModifier, pasteWithoutFormatting
-        ))
-        .fixedSize(horizontal: false, vertical: true)
-        .foregroundStyle(.gray)
-        .controlSize(.small)
-      }
-
-      Settings.Section(title: "") {
-        if let notificationsURL = notificationsURL {
-          Link(destination: notificationsURL, label: {
-            Text("NotificationsAndSounds", tableName: "GeneralSettings")
+        TuckSettingsRow(
+          icon: "command",
+          title: "Open Tuck",
+          subtitle: "The shortcut you’ll use from anywhere."
+        ) {
+          KeyboardShortcuts.Recorder(for: .popup, onChange: { newShortcut in
+            if newShortcut == nil {
+              AppState.shared.popup.deinitEventsMonitor()
+            } else {
+              AppState.shared.popup.initEventsMonitor()
+            }
           })
+          .labelsHidden()
+          .accessibilityLabel("Open Tuck shortcut")
+        }
+
+        TuckSettingsDivider()
+
+        TuckSettingsRow(
+          icon: "arrow.down.doc",
+          title: "Paste automatically",
+          subtitle: "Paste an item as soon as you choose it."
+        ) {
+          Defaults.Toggle(key: .pasteByDefault) { EmptyView() }
+            .labelsHidden()
+        }
+      }
+
+      TuckSettingsCard(title: "Updates & notifications") {
+        TuckSettingsRow(
+          icon: "arrow.triangle.2.circlepath",
+          title: "Updates are installed manually",
+          subtitle: "Automatic updates will arrive with a future public release."
+        ) {
+          Button("About this build…") {
+            updater.checkForUpdates()
+          }
+        }
+
+        if let notificationsURL {
+          TuckSettingsDivider()
+
+          TuckSettingsRow(
+            icon: "bell",
+            title: "Notifications & sounds",
+            subtitle: "Choose how Tuck gets your attention."
+          ) {
+            Link("Open Settings", destination: notificationsURL)
+          }
         }
       }
     }
   }
+}
 
-  private func refreshModifiers(_ sender: Sendable) {
-    copyModifier = HistoryItemAction.copy.modifierFlags.description
-    pasteModifier = HistoryItemAction.paste.modifierFlags.description
-    pasteWithoutFormatting = HistoryItemAction.pasteWithoutFormatting.modifierFlags.description
+struct TuckSettingsPage<Content: View>: View {
+  let title: String
+  let subtitle: String
+  @ViewBuilder let content: Content
+
+  var body: some View {
+    ScrollView {
+      VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: 5) {
+          Text(title)
+            .font(.system(size: 26, weight: .bold, design: .rounded))
+          Text(subtitle)
+            .font(.body)
+            .foregroundStyle(.secondary)
+        }
+
+        content
+      }
+      .frame(maxWidth: 680, alignment: .leading)
+      .padding(.horizontal, 34)
+      .padding(.top, 30)
+      .padding(.bottom, 36)
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Color(nsColor: .windowBackgroundColor))
+  }
+}
+
+struct TuckSettingsCard<Content: View>: View {
+  let title: String
+  @ViewBuilder let content: Content
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      Text(title.uppercased())
+        .font(.caption.weight(.semibold))
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, 16)
+        .padding(.top, 14)
+        .padding(.bottom, 8)
+
+      content
+    }
+    .padding(.bottom, 4)
+    .background(Color(nsColor: .controlBackgroundColor).opacity(0.72))
+    .clipShape(.rect(cornerRadius: 13))
+    .overlay {
+      RoundedRectangle(cornerRadius: 13)
+        .stroke(Color.secondary.opacity(0.14))
+    }
+  }
+}
+
+struct TuckSettingsRow<Control: View>: View {
+  let icon: String
+  let title: String
+  let subtitle: String
+  @ViewBuilder let control: Control
+
+  var body: some View {
+    HStack(spacing: 13) {
+      Image(systemName: icon)
+        .font(.system(size: 14, weight: .semibold))
+        .foregroundStyle(.tint)
+        .frame(width: 30, height: 30)
+        .background(Color.accentColor.opacity(0.11))
+        .clipShape(.rect(cornerRadius: 8))
+
+      VStack(alignment: .leading, spacing: 2) {
+        Text(title)
+          .font(.body.weight(.medium))
+        Text(subtitle)
+          .font(.caption)
+          .foregroundStyle(.secondary)
+      }
+
+      Spacer(minLength: 16)
+      control
+        .fixedSize()
+    }
+    .padding(.horizontal, 16)
+    .padding(.vertical, 11)
+  }
+}
+
+struct TuckSettingsDivider: View {
+  var body: some View {
+    Divider()
+      .padding(.leading, 59)
   }
 }
 
 #Preview {
   GeneralSettingsPane()
-    .environment(\.locale, .init(identifier: "en"))
+    .environment(AppState.shared)
+    .modelContainer(Storage.shared.container)
+    .frame(width: 860, height: 620)
 }

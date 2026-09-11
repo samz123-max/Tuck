@@ -1,3 +1,5 @@
+> **Tuck experimental fork:** See [the Tuck README](README-Tuck.md) for the redesigned application, installation and validation. The original Maccy documentation follows for attribution and unchanged workflows.
+
 > [!WARNING]
 > **Beware of fake websites impersonating Maccy.** Malicious sites (such as `maccyapp.net` and `maccyapp.com`) distribute malware disguised as Maccy. [**maccy.app**](https://maccy.app) is the **only** official website.
 
@@ -72,7 +74,7 @@ brew install maccy
 You can tell Maccy to ignore all copied items:
 
 ```sh
-defaults write org.p0deje.Maccy ignoreEvents true # default is false
+defaults write app.tuck.clipboard ignoreEvents true # default is false
 ```
 
 This is useful if you have some workflow for copying sensitive data. You can set `ignoreEvents` to true, copy the data and set `ignoreEvents` back to false.
@@ -110,7 +112,7 @@ By default, Maccy checks clipboard every 500 ms, which should be enough for most
 to speed it up, you can change it with `defaults`:
 
 ```sh
-defaults write org.p0deje.Maccy clipboardCheckInterval 0.1 # 100 ms
+defaults write app.tuck.clipboard clipboardCheckInterval 0.1 # 100 ms
 ```
 
 ## FAQ
@@ -137,7 +139,7 @@ defaults write org.p0deje.Maccy clipboardCheckInterval 0.1 # 100 ms
 If for some reason it doesn't work, run the following command in Terminal.app:
 
 ```sh
-defaults write org.p0deje.Maccy showFooter 1
+defaults write app.tuck.clipboard showFooter 1
 ```
 
 ### How to ignore copies from [Universal Clipboard](https://support.apple.com/en-us/102430)?

@@ -12,7 +12,7 @@
 "clear_alert_message" = "";
 "clear_alert_cancel" = "";
 "clear_all_tooltip" = "";
-"status_item_accessibility_label" = "Maccy — leikepöydän historia";
+"status_item_accessibility_label" = "Tuck — leikepöydän historia";
 "status_item_disabled_accessibility_suffix" = "keskeytetty";
 "search_clear_accessibility_label" = "Tyhjennä haku";
 "history_item_pin_action" = "Kiinnitä";

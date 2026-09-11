@@ -331,6 +331,66 @@ class HistoryTests: XCTestCase { // swiftlint:disable:this type_body_length
     try assertStorageCounts(items: 1, contents: 1)
   }
 
+  func testFilteringSurvivesCapturePinningAndReload() async throws {
+    let savedMode = Defaults[.searchMode]
+    Defaults[.searchMode] = .exact
+    defer {
+      history.category = .all
+      history.searchQuery = ""
+      Defaults[.searchMode] = savedMode
+    }
+    history.add(historyItem("Meeting notes"))
+    let link = history.add(historyItem("https://apple.com/mac"))
+    history.category = .links
+    XCTAssertEqual(history.items, [link])
+    history.add(historyItem("More meeting notes"))
+    XCTAssertEqual(history.items, [link])
+    history.searchQuery = "apple"
+    let otherLink = history.add(historyItem("https://example.com"))
+    XCTAssertEqual(history.items, [link])
+    history.togglePin(link)
+    XCTAssertTrue(link.isPinned)
+    XCTAssertEqual(Set(history.items), Set([link, otherLink]))
+    XCTAssertTrue(history.items.allSatisfy { $0.category == .links })
+    try await history.load()
+    XCTAssertEqual(history.items.count, 2)
+    XCTAssertEqual(history.pinnedItems.first?.item.pin, link.item.pin)
+    history.category = .text
+    XCTAssertEqual(history.items.count, 2)
+    XCTAssertTrue(history.items.allSatisfy { $0.category == .text })
+    AppState.shared.popup.reset()
+    XCTAssertEqual(history.category, .all)
+    XCTAssertEqual(history.items.count, 4)
+  }
+
+  func testExistingStoreRoundTripNeedsNoCategoryMigration() throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let url = directory.appendingPathComponent("Storage.sqlite")
+    let bytes = Data("https://apple.com/mac".utf8)
+    do {
+      let container = try ModelContainer(for: HistoryItem.self, configurations: ModelConfiguration(url: url))
+      let item = HistoryItem()
+      container.mainContext.insert(item)
+      item.title = "Apple Mac"
+      item.pin = "b"
+      item.numberOfCopies = 7
+      item.contents = [HistoryItemContent(type: NSPasteboard.PasteboardType.string.rawValue, value: bytes)]
+      try container.mainContext.save()
+    }
+    let reopened = try ModelContainer(for: HistoryItem.self, configurations: ModelConfiguration(url: url))
+    let stored = try XCTUnwrap(reopened.mainContext.fetch(FetchDescriptor<HistoryItem>()).first)
+    let decorated = HistoryItemDecorator(stored)
+    XCTAssertEqual(decorated.category, .links)
+    XCTAssertEqual(stored.contents.first?.value, bytes)
+    XCTAssertEqual(stored.pin, "b")
+    XCTAssertEqual(stored.numberOfCopies, 7)
+    XCTAssertEqual(stored.title, "Apple Mac")
+    XCTAssertEqual(Search().search(string: "", within: [decorated], category: .links).count, 1)
+    try reopened.mainContext.save()
+  }
+
   private func assertStorageCounts(
     items: Int,
     contents: Int,
