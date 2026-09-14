@@ -1,48 +1,68 @@
 # Tuck
 
-**A happy little home for everything you copy.** Tuck is an experimental macOS redesign of [Maccy](https://github.com/p0deje/Maccy), built from its existing native application rather than a replacement clipboard engine.
+**A happy little home for everything you copy.**
 
-## What changed
+Tuck is a native clipboard manager for macOS. It keeps a local history of copied items so they are easy to find, reuse, pin, preview, and paste.
 
-- A clearer header, focused search field and native All / Text / Links / Images control.
-- Visible pin and unpin buttons, a labelled Pinned area, and the existing pin shortcuts and ordering options.
-- More comfortable row spacing, restrained native materials, readable selection across system accent colours, and accessibility labels on new controls.
-- A new name and original icon featuring paper slips gathered in a small teal holder.
-- A playful menu-bar icon family: Pocket by default, with Peek, Buddy, and Spark alternatives.
-- A modern native Settings window with three approachable sections and power-user controls kept behind Advanced Settings.
+Tuck is an independent fork of [Maccy](https://github.com/p0deje/Maccy) by Alex Rodionov and its contributors. It builds on Maccy's clipboard engine and codebase; it is not an official Maccy release. Tuck's product direction is to make that foundation feel friendlier, more modern, and more intuitive while retaining a focused native Mac experience.
 
-Categories refine the existing search. Links are complete HTTP, HTTPS or email links; text containing a link remains Text. Images are recognised by their clipboard formats. Files and other supported formats remain available in All. Classification is local, deterministic, cached only in memory, and adds no stored fields or migration.
+## Status
 
-## Still Maccy underneath
+Tuck is a usable personal and open-source project, published source-first. This repository does not currently provide a Developer ID-signed or notarised release, DMG, or automatic update channel. If you want to use Tuck today, build it from source.
 
-Clipboard capture, deduplication, paste and formatting actions, exclusion rules, pin letters, keyboard shortcuts, history limits, preferences and SwiftData models retain the upstream implementations. Existing exact, fuzzy, mixed and regular-expression search preferences remain supported. No account, telemetry, service, AI classifier or runtime dependency was added. Existing on-device image text recognition remains intact.
+Issues and pull requests are welcome. Maintenance, support, and feature work are best-effort, with no guaranteed response time or guarantee that a request will be implemented. Product direction remains with the maintainer, and contributions may be declined when they do not fit it.
 
-Tuck uses its own `app.tuck.clipboard` bundle identifier. Existing local development history and preferences can be transferred once with the documented migration tool; the original Maccy container is left intact as a fallback. Quit Maccy before running Tuck and run one version at a time. Tuck targets Apple Silicon and macOS 14 or later, using native glass on macOS 26 and native material fallbacks on earlier systems.
+## Highlights
 
-Automatic upstream updates are disabled for this experiment so Maccy's updater cannot replace Tuck with the original app. The stored preference is retained; the update control explains the experimental distribution. Updates to Tuck are manual.
+- Search and filter clipboard history across all items, text, links, and images.
+- Pin frequently used items and use keyboard shortcuts for fast access.
+- Preview copied content and paste it with or without formatting.
+- Configure history, appearance, shortcuts, and exclusions in native settings.
+- Keep clipboard classification and history on the Mac; Tuck adds no account, telemetry, cloud service, or runtime AI feature.
 
-The inactive Sparkle updater framework is not bundled. The release keeps Hardened Runtime enabled and needs no developer tools or external runtime files.
+## Build from source
 
-## Installation and signing
+Requirements:
 
-The Tuck release DMG will contain Tuck and an Applications shortcut. Drag Tuck to Applications, then open it there. Grant the normal Accessibility permission if you use automatic paste. Do not run it alongside Maccy or the earlier redesign build.
+- An Apple Silicon Mac
+- macOS 14 or later
+- Xcode 26 or later (currently validated with Xcode 26.6)
+- Internet access the first time Xcode resolves the public Swift Package dependencies
 
-You can also copy the complete `Tuck.app` bundle from Applications to another Apple Silicon Mac. Clipboard history and preferences are separate local data; copying the app does not copy them. Additional UI acceptance testing is being performed by the project owner.
+Clone the repository, open `Tuck.xcodeproj` in Xcode, select the **Tuck** scheme and **My Mac**, then build and run.
 
-Packaging and signing will be revalidated as Tuck in Phase 4. The earlier redesign release was signed with the project owner’s Apple Development certificate; it was a testing build, not Developer ID signed or notarised. Distribution to other Macs still requires Developer ID signing and Apple notarisation for the conventional Gatekeeper experience. No security setting is disabled by this project.
-
-## Development
-
-Build and test Tuck with the Tuck scheme and Swift module:
+For a command-line build that does not require a signing identity:
 
 ```sh
+git clone https://github.com/samz123-max/Tuck.git
+cd Tuck
 ./tools/xcode.sh -project Tuck.xcodeproj -scheme Tuck -configuration Debug \
   -destination 'platform=macOS,arch=arm64' CODE_SIGN_IDENTITY=- \
-  CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= test
+  CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= clean build
 ```
 
-See [architecture](docs/redesign/ARCHITECTURE.md) and the [historical validation record](docs/redesign/VALIDATION.md), including captures of the earlier working identity and the baseline test comparison.
+Xcode resolves the pinned dependencies from the public repositories recorded in `Package.resolved`. No private dependency, credential, or file outside the repository is required for a normal build.
 
-## Attribution
+## Important caveats
 
-Derived from Maccy by Alex (p0deje) and its contributors. Original copyright and the [MIT licence](LICENSE) are retained. Tuck is an independent experimental fork, not an official Maccy release. Existing third-party acknowledgements remain included.
+- Tuck stores clipboard history locally. Clipboard history can contain sensitive material, so review the exclusion settings and clear history when appropriate.
+- macOS Accessibility permission is required for automatic paste. Copying and browsing history still work without it.
+- Tuck uses its own `app.tuck.clipboard` bundle identifier, but currently retains Maccy's internal storage-folder name for compatibility. Quit Maccy before running Tuck and avoid running both at once.
+- Updates are manual. The inherited Maccy update feed is disabled in Tuck so it cannot replace Tuck with an upstream Maccy build.
+- A locally built app is not the same as a Developer ID-signed and Apple-notarised public release. Do not disable macOS security protections to install Tuck.
+
+## How Tuck was built
+
+Tuck is an AI-assisted software project. I define the product direction and UX, product-manage the work, direct the implementation, and test and validate the application. Much of the software implementation for the fork has been produced with AI coding tools.
+
+I am making that process explicit because Tuck is also an experiment in what a non-software-engineer can build by treating AI as an engineering collaborator. The underlying Maccy codebase remains the work of its original authors and contributors.
+
+## Contributing and security
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) before opening an issue or pull request. Please report suspected vulnerabilities privately as described in [SECURITY.md](SECURITY.md), not in a public issue.
+
+## License and attribution
+
+Tuck is distributed under the [MIT License](LICENSE). The repository preserves Maccy's original copyright and license notice. Original Maccy code and contributions remain attributable to Alex Rodionov and the Maccy contributors; Tuck-specific changes are the work of Tuck contributors.
+
+For reference, [README-Maccy.md](README-Maccy.md) preserves the upstream project documentation present when this fork was created. For the current upstream project, visit [p0deje/Maccy](https://github.com/p0deje/Maccy).

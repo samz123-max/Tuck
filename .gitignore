@@ -1,5 +1,53 @@
-xcuserdata/
-Tuck.xcodeproj/project.xcworkspace/xcshareddata
-.idea
+# macOS
 .DS_Store
-Maccy/.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Xcode user state and generated output
+xcuserdata/
+DerivedData/
+build/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+*.moved-aside
+*.xcresult
+*.xcarchive
+*.dSYM
+*.dSYM.zip
+
+# Swift Package Manager local state
+.build/
+.swiftpm/
+Packages/
+
+# Local editor and environment configuration
+.idea/
+.vscode/
+.env
+.env.*
+!.env.example
+*.xcconfig.local
+Local.xcconfig
+Secrets.xcconfig
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*~
+
+# Signing and distribution artifacts
+*.cer
+*.crt
+*.csr
+*.key
+*.mobileprovision
+*.p12
+*.pem
+*.pfx
+*.pkg
+*.provisionprofile
+*.dmg
+*.zip
