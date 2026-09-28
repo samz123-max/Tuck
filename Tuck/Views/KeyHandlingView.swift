@@ -148,7 +148,10 @@ struct KeyHandlingView<Content: View>: View {
           appState.togglePin()
           return .handled
         case .selectCurrentItem:
-          appState.select(flags: .currentModifierFlags)
+          let selectionFlags = NSEvent.modifierFlags
+            .intersection(.deviceIndependentFlagsMask)
+            .subtracting([.capsLock, .numericPad, .function])
+          appState.select(flags: selectionFlags)
           return .handled
         case .close:
           appState.popup.close()

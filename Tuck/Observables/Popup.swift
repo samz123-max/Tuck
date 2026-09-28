@@ -3,6 +3,29 @@ import Defaults
 import KeyboardShortcuts
 import Observation
 
+enum InterfaceStyle: String, CaseIterable, Identifiable, Defaults.Serializable {
+  case floatingWindow
+  case bottomStrip
+
+  var id: Self { self }
+
+  var title: String {
+    switch self {
+    case .floatingWindow: "Floating Window"
+    case .bottomStrip: "Bottom Strip"
+    }
+  }
+
+  var settingsDescription: String {
+    switch self {
+    case .floatingWindow:
+      "A compact clipboard window that opens where you choose."
+    case .bottomStrip:
+      "A wide, visual clipboard surface along the bottom of the active display."
+    }
+  }
+}
+
 enum ListStyle: String, CaseIterable, Identifiable, Defaults.Serializable {
   case compact
   case comfortable
@@ -150,6 +173,14 @@ class Popup {
 
   func close() {
     AppState.shared.appDelegate?.panel.close()  // close() calls reset
+  }
+
+  func close(after action: @escaping () -> Void) {
+    guard let panel = AppState.shared.appDelegate?.panel else {
+      action()
+      return
+    }
+    panel.close(after: action)  // close() calls reset
   }
 
   func isClosed() -> Bool {

@@ -48,6 +48,7 @@ extension Defaults.Keys {
     suite: preferencesSuite
   )
   static let imageMaxHeight = Key<Int>("imageMaxHeight", default: 40, suite: preferencesSuite)
+  static let interfaceStyle = Key<InterfaceStyle>("interfaceStyle", default: .floatingWindow, suite: preferencesSuite)
   static let lastReviewRequestedAt = Key<Date>("lastReviewRequestedAt", default: Date.now, suite: preferencesSuite)
   static let listStyle = Key<ListStyle>("listStyle", default: .comfortable, suite: preferencesSuite)
   static let menuIcon = Key<MenuIcon>("menuIcon", default: .pocket, suite: preferencesSuite)
@@ -72,6 +73,11 @@ extension Defaults.Keys {
   static let sortBy = Key<Sorter.By>("sortBy", default: .lastCopiedAt, suite: preferencesSuite)
   static let suppressClearAlert = Key<Bool>("suppressClearAlert", default: false, suite: preferencesSuite)
   static let windowSize = Key<NSSize>("windowSize", default: NSSize(width: 450, height: 800), suite: preferencesSuite)
+  static let bottomStripSize = Key<NSSize>(
+    "bottomStripSize",
+    default: NSSize(width: 1280, height: 336),
+    suite: preferencesSuite
+  )
   static let windowPosition = Key<NSPoint>("windowPosition", default: NSPoint(x: 0.5, y: 0.8), suite: preferencesSuite)
   static let showApplicationIcons = Key<Bool>("showApplicationIcons", default: false, suite: preferencesSuite)
   static let showHexColorSwatch = Key<Bool>("showHexColorSwatch", default: true, suite: preferencesSuite)

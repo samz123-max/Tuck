@@ -77,6 +77,9 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
   @ObservationIgnored
   var all: [HistoryItemDecorator] = []
 
+  @ObservationIgnored
+  private var isLoaded = false
+
   init() {
     Task {
       for await _ in Defaults.updates(.pasteByDefault, initial: false) {
@@ -114,6 +117,12 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
   }
 
   @MainActor
+  func loadIfNeeded() async throws {
+    guard !isLoaded else { return }
+    try await load()
+  }
+
+  @MainActor
   func load() async throws {
     let descriptor = FetchDescriptor<HistoryItem>()
     let results = try Storage.shared.context.fetch(descriptor)
@@ -128,6 +137,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     Task {
       AppState.shared.popup.needsResize = true
     }
+    isLoaded = true
   }
 
   @MainActor
@@ -346,24 +356,23 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     }
 
     if modifierFlags.isEmpty {
-      AppState.shared.popup.close()
       Clipboard.shared.copy(item.item, removeFormatting: Defaults[.removeFormattingByDefault])
       if Defaults[.pasteByDefault] {
-        Clipboard.shared.paste()
+        AppState.shared.popup.close(after: Clipboard.shared.paste)
+      } else {
+        AppState.shared.popup.close()
       }
     } else {
       switch HistoryItemAction(modifierFlags) {
       case .copy:
-        AppState.shared.popup.close()
         Clipboard.shared.copy(item.item)
+        AppState.shared.popup.close()
       case .paste:
-        AppState.shared.popup.close()
         Clipboard.shared.copy(item.item)
-        Clipboard.shared.paste()
+        AppState.shared.popup.close(after: Clipboard.shared.paste)
       case .pasteWithoutFormatting:
-        AppState.shared.popup.close()
         Clipboard.shared.copy(item.item, removeFormatting: true)
-        Clipboard.shared.paste()
+        AppState.shared.popup.close(after: Clipboard.shared.paste)
       case .unknown:
         return
       }

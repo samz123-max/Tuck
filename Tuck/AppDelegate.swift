@@ -111,6 +111,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     ) {
       ContentView()
     }
+
+    if Defaults[.interfaceStyle] == .bottomStrip {
+      Task { @MainActor [weak self] in
+        try? await History.shared.loadIfNeeded()
+
+        // Prime only the cards likely to be on the first screen. Application
+        // images are shared by bundle identifier, so this also warms repeated
+        // source icons without processing the entire history.
+        var warmedApplications = Set<ObjectIdentifier>()
+        for item in History.shared.items.prefix(12) {
+          let applicationImage = item.applicationImage
+          if warmedApplications.insert(ObjectIdentifier(applicationImage)).inserted {
+            _ = applicationImage.accentColor
+          }
+          item.ensureCardImage()
+        }
+
+        await Task.yield()
+        self?.panel.warmUpBottomStrip()
+      }
+    }
   }
 
   func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {

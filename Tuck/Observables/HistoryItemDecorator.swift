@@ -12,6 +12,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
 
   static var previewImageSize: NSSize { NSScreen.forPopup?.visibleFrame.size ?? NSSize(width: 2048, height: 1536) }
   static var thumbnailImageSize: NSSize { NSSize(width: 340, height: Defaults[.imageMaxHeight]) }
+  static let cardImageSize = NSSize(width: 440, height: 300)
 
   let id = UUID()
   let category: ClipboardCategory?
@@ -44,11 +45,13 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
 
   var previewImageGenerationTask: Task<(), Error>?
   var thumbnailImageGenerationTask: Task<(), Error>?
+  var cardImageGenerationTask: Task<(), Error>?
   var previewImage: NSImage?
   var previewText: String {
     item.previewableText
   }
   var thumbnailImage: NSImage?
+  var cardImage: NSImage?
   var applicationImage: ApplicationImage
 
   // 10k characters seems to be more than enough on large displays
@@ -138,6 +141,16 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   }
 
   @MainActor
+  func ensureCardImage() {
+    guard item.image != nil, cardImage == nil, cardImageGenerationTask == nil else {
+      return
+    }
+    cardImageGenerationTask = Task { [weak self] in
+      self?.generateCardImage()
+    }
+  }
+
+  @MainActor
   func asyncGetPreviewImage() async -> NSImage? {
     if let image = previewImage {
       return image
@@ -151,10 +164,13 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   func cleanupImages() {
     thumbnailImageGenerationTask?.cancel()
     previewImageGenerationTask?.cancel()
+    cardImageGenerationTask?.cancel()
     thumbnailImage?.recache()
     previewImage?.recache()
+    cardImage?.recache()
     thumbnailImage = nil
     previewImage = nil
+    cardImage = nil
     item.clearDecodedImageCache()
   }
 
@@ -172,6 +188,14 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
       return
     }
     previewImage = image.resized(to: HistoryItemDecorator.previewImageSize)
+  }
+
+  @MainActor
+  private func generateCardImage() {
+    guard let image = item.image else {
+      return
+    }
+    cardImage = image.resized(to: Self.cardImageSize)
   }
 
   @MainActor

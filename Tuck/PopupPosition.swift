@@ -2,6 +2,41 @@ import AppKit.NSEvent
 import Defaults
 import Foundation
 
+enum BottomStripGeometry {
+  static let horizontalInset: CGFloat = 12
+  static let minimumHeight: CGFloat = 336
+  static let maximumHeight: CGFloat = 460
+  static let cornerRadius: CGFloat = 20
+  static let previewWidth: CGFloat = 560
+  static let previewHeight: CGFloat = 380
+  static let previewGap: CGFloat = 8
+  static let previewCornerRadius: CGFloat = 18
+
+  static func width(in visibleFrame: NSRect) -> CGFloat {
+    max(1, visibleFrame.width - horizontalInset * 2)
+  }
+
+  static func frame(in visibleFrame: NSRect, preferredSize: NSSize) -> NSRect {
+    let height = min(max(preferredSize.height, minimumHeight), min(maximumHeight, visibleFrame.height))
+
+    return NSRect(
+      x: visibleFrame.minX + horizontalInset,
+      y: visibleFrame.minY,
+      width: width(in: visibleFrame),
+      height: height
+    )
+  }
+}
+
+extension NSScreen {
+  static var activeForBottomStrip: NSScreen? {
+    let mouseLocation = NSEvent.mouseLocation
+    return screens.first { NSMouseInRect(mouseLocation, $0.frame, false) }
+      ?? main
+      ?? screens.first
+  }
+}
+
 enum PopupPosition: String, CaseIterable, Identifiable, CustomStringConvertible, Defaults.Serializable {
   case cursor
   case statusItem

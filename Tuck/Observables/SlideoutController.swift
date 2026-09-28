@@ -145,6 +145,12 @@ class SlideoutController {
   }
 
   func togglePreview(trigger: SlideoutToggleTrigger = .manual) {
+    if Defaults[.interfaceStyle] == .bottomStrip {
+      guard trigger == .manual else { return }
+      AppState.shared.appDelegate?.panel.toggleBottomStripPreview()
+      return
+    }
+
     if !state.isOpen {
       let navigator = AppState.shared.navigator
       guard navigator.leadHistoryItem != nil || navigator.pasteStackSelected else { return }
@@ -223,6 +229,7 @@ class SlideoutController {
   func startAutoOpen() {
     cancelAutoOpen()
 
+    guard Defaults[.interfaceStyle] == .floatingWindow else { return }
     guard Defaults[.openPreviewAutomatically] else { return }
     guard autoOpenEnabled else { return }
     guard !autoOpenSuppressed else { return }
@@ -231,6 +238,7 @@ class SlideoutController {
     autoOpenTask = Task { @MainActor in
       try? await Task.sleep(for: .milliseconds(Defaults[.previewDelay]))
       guard !Task.isCancelled else { return }
+      guard Defaults[.interfaceStyle] == .floatingWindow else { return }
       guard Defaults[.openPreviewAutomatically] else { return }
 
       if !state.isOpen {

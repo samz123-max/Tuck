@@ -1,4 +1,5 @@
 import AppKit.NSEvent
+import Defaults
 import KeyboardShortcuts
 import Sauce
 
@@ -82,6 +83,28 @@ enum KeyChord: CaseIterable {
       self = .deleteOneCharFromSearch
     case (.w, [.control]):
       self = .deleteLastWordFromSearch
+    case (.rightArrow, [.shift]) where Defaults[.interfaceStyle] == .bottomStrip:
+      self = AppState.shared.multiSelectionEnabled ? .extendToNext : .moveToNext
+    case (.rightArrow, []) where Defaults[.interfaceStyle] == .bottomStrip:
+      self = .moveToNext
+    case (.rightArrow, [.command, .shift]),
+         (.rightArrow, [.option, .shift]) where Defaults[.interfaceStyle] == .bottomStrip:
+      self = AppState.shared.multiSelectionEnabled ? .extendToLast : .moveToLast
+    case (.rightArrow, _) where Defaults[.interfaceStyle] == .bottomStrip
+      && !modifierFlags.isDisjoint(with: [.command, .option]):
+      self = .moveToLast
+    case (.leftArrow, [.shift]) where Defaults[.interfaceStyle] == .bottomStrip:
+      self = AppState.shared.multiSelectionEnabled ? .extendToPrevious : .moveToPrevious
+    case (.leftArrow, []) where Defaults[.interfaceStyle] == .bottomStrip:
+      self = .moveToPrevious
+    case (.leftArrow, [.command, .shift]),
+         (.leftArrow, [.option, .shift]) where Defaults[.interfaceStyle] == .bottomStrip:
+      self = AppState.shared.multiSelectionEnabled ? .extendToFirst : .moveToFirst
+    case (.leftArrow, _) where Defaults[.interfaceStyle] == .bottomStrip
+      && !modifierFlags.isDisjoint(with: [.command, .option]):
+      self = .moveToFirst
+    case (.space, []) where Defaults[.interfaceStyle] == .bottomStrip:
+      self = .togglePreview
     case (.downArrow, [.shift]),
          (.n, [.control, .shift]):
       self = AppState.shared.multiSelectionEnabled ? .extendToNext : .moveToNext

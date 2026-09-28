@@ -3,6 +3,7 @@ import Defaults
 import SwiftUI
 
 struct AppearanceSettingsPane: View {
+  @Default(.interfaceStyle) private var interfaceStyle
   @Default(.popupPosition) private var popupAt
   @Default(.popupScreen) private var popupScreen
   @Default(.listStyle) private var listStyle
@@ -15,6 +16,24 @@ struct AppearanceSettingsPane: View {
       title: "Appearance",
       subtitle: "Make Tuck feel at home without getting lost in details."
     ) {
+      TuckSettingsCard(title: "Interface") {
+        TuckSettingsRow(
+          icon: interfaceStyle == .bottomStrip ? "rectangle.bottomhalf.inset.filled" : "macwindow",
+          title: "Interface style",
+          subtitle: interfaceStyle.settingsDescription
+        ) {
+          Picker("Interface style", selection: $interfaceStyle) {
+            ForEach(InterfaceStyle.allCases) { style in
+              Text(style.title).tag(style)
+            }
+          }
+          .labelsHidden()
+          .pickerStyle(.segmented)
+          .frame(width: 230)
+          .accessibilityLabel("Interface style")
+        }
+      }
+
       TuckSettingsCard(title: "Clipboard list") {
         VStack(alignment: .leading, spacing: 12) {
           Picker("List style", selection: $listStyle) {
@@ -55,34 +74,36 @@ struct AppearanceSettingsPane: View {
         }
       }
 
-      TuckSettingsCard(title: "Window") {
-        TuckSettingsRow(
-          icon: "macwindow",
-          title: "Show Tuck at",
-          subtitle: "Where the clipboard opens."
-        ) {
-          Picker("Show Tuck at", selection: $popupAt) {
-            ForEach(PopupPosition.allCases) { position in
-              if position == .center || position == .lastPosition, screens.count > 1 {
-                screenPicker(for: position)
-              } else {
-                Text(position.description)
+      if interfaceStyle == .floatingWindow {
+        TuckSettingsCard(title: "Window") {
+          TuckSettingsRow(
+            icon: "macwindow",
+            title: "Show Tuck at",
+            subtitle: "Where the clipboard opens."
+          ) {
+            Picker("Show Tuck at", selection: $popupAt) {
+              ForEach(PopupPosition.allCases) { position in
+                if position == .center || position == .lastPosition, screens.count > 1 {
+                  screenPicker(for: position)
+                } else {
+                  Text(position.description)
+                }
               }
             }
-          }
-          .labelsHidden()
-          .frame(width: 155)
-        }
-
-        TuckSettingsDivider()
-
-        TuckSettingsRow(
-          icon: "rectangle.on.rectangle",
-          title: "Open previews automatically",
-          subtitle: "Show a larger preview after a short pause."
-        ) {
-          Defaults.Toggle(key: .openPreviewAutomatically) { EmptyView() }
             .labelsHidden()
+            .frame(width: 155)
+          }
+
+          TuckSettingsDivider()
+
+          TuckSettingsRow(
+            icon: "rectangle.on.rectangle",
+            title: "Open previews automatically",
+            subtitle: "Show a larger preview after a short pause."
+          ) {
+            Defaults.Toggle(key: .openPreviewAutomatically) { EmptyView() }
+              .labelsHidden()
+          }
         }
       }
     }
