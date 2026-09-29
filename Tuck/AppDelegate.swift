@@ -41,6 +41,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     #endif
 
+    // Permissionless experiment: every history action copies to the pasteboard
+    // and leaves the final Paste command to the user.
+    Defaults[.pasteByDefault] = false
+
     // Bridge FloatingPanel via AppDelegate.
     AppState.shared.appDelegate = self
 

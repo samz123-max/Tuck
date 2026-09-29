@@ -72,7 +72,6 @@ struct ToolbarButton<Label: View>: View {
 
 struct ToolbarView: View {
   @State private var appState = AppState.shared
-  @Default(.pasteByDefault) private var pasteByDefault
 
   @Namespace var unionNamespace
 
@@ -174,10 +173,7 @@ struct ToolbarView: View {
         Button {
           appState.history.select(appState.navigator.leadHistoryItem, flags: [])
         } label: {
-          Label(
-            pasteByDefault ? "Paste" : "Copy",
-            systemImage: pasteByDefault ? "arrow.down.doc" : "doc.on.doc"
-          )
+          Label("Copy", systemImage: "doc.on.doc")
         }
         .buttonStyle(.borderedProminent)
         .controlSize(.small)

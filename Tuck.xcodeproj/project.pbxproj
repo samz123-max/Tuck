@@ -107,7 +107,6 @@
 		DA689FCF2C1DEE570009B887 /* AppearanceSettings.strings in Resources */ = {isa = PBXBuildFile; fileRef = DA689FCD2C1DEE570009B887 /* AppearanceSettings.strings */; };
 		DA696BCE240177E800DE80CF /* Sorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA696BCD240177E800DE80CF /* Sorter.swift */; };
 		DA696BD22401EEE900DE80CF /* SorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA696BD12401EEE900DE80CF /* SorterTests.swift */; };
-		DA6D98E22AEABE03008A77CE /* Accessibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA6D98E12AEABE03008A77CE /* Accessibility.swift */; };
 		DA740D7A2C21E6B0007B1A36 /* AdvancedSettings.strings in Resources */ = {isa = PBXBuildFile; fileRef = DA740D782C21E6B0007B1A36 /* AdvancedSettings.strings */; };
 		DA7A753E26A52F0F00DC16EF /* NSImage+Names.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7A753D26A52F0F00DC16EF /* NSImage+Names.swift */; };
 		DA81D674252A056B009977BC /* Throttler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA81D673252A056B009977BC /* Throttler.swift */; };
@@ -423,7 +422,6 @@
 		DA689FE12C1DEE6C0009B887 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/AppearanceSettings.strings; sourceTree = "<group>"; };
 		DA696BCD240177E800DE80CF /* Sorter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sorter.swift; sourceTree = "<group>"; };
 		DA696BD12401EEE900DE80CF /* SorterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SorterTests.swift; sourceTree = "<group>"; };
-		DA6D98E12AEABE03008A77CE /* Accessibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accessibility.swift; sourceTree = "<group>"; };
 		DA740D792C21E6B0007B1A36 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/AdvancedSettings.strings; sourceTree = "<group>"; };
 		DA740D7B2C21E6B6007B1A36 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/AdvancedSettings.strings; sourceTree = "<group>"; };
 		DA740D7C2C21E6B7007B1A36 /* bs */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bs; path = bs.lproj/AdvancedSettings.strings; sourceTree = "<group>"; };
@@ -853,7 +851,6 @@
 				DA21AD3C249E85BD003E7C98 /* Sounds */,
 				DA19690C2C3EEF9300258481 /* Views */,
 				DAAEB195219694AE00A7883C /* About.swift */,
-				DA6D98E12AEABE03008A77CE /* Accessibility.swift */,
 				DAEE38461E3DBEB100DD2966 /* AppDelegate.swift */,
 				DAB082952A2B7B850053E463 /* AppStoreReview.swift */,
 				2FB5BC9F2CD8F73C008B33F4 /* ApplicationImage.swift */,
@@ -1167,7 +1164,6 @@
 				DA3F1B452C90084600267632 /* Sauce+KeyboardShortcuts.swift in Sources */,
 				DA689FCC2C1D1D510009B887 /* MenuIcon.swift in Sources */,
 				DAAEB196219694AE00A7883C /* About.swift in Sources */,
-				DA6D98E22AEABE03008A77CE /* Accessibility.swift in Sources */,
 				2F0EC7792E7727E3003E2EA9 /* HeightReaderModifier.swift in Sources */,
 				2F578C3D2EFFE8400088B759 /* ItemsProtocol.swift in Sources */,
 				DAFEF0B8249D7DEE006029E8 /* KeyboardShortcuts.Name+Shortcuts.swift in Sources */,

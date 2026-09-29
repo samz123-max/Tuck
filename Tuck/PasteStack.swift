@@ -3,29 +3,10 @@ import AppKit
 
 @Observable
 class PasteStack: Identifiable, Hashable {
-  private static var listener: Any?
-
+  /// Paste-stack advancement previously watched Command-V system-wide. This
+  /// permissionless experiment deliberately performs no global key monitoring.
   static func initializeIfNeeded() {
-    guard listener == nil else { return }
-    Accessibility.check()
-
-    var pasteDown: Bool = false
-    listener = NSEvent.addGlobalMonitorForEvents(matching: [.keyUp, .keyDown]) { event in
-      switch event.type {
-      case .keyDown:
-        if event.keyCode == KeyChord.pasteKey.QWERTYKeyCode
-           && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] {
-          pasteDown = true
-        }
-      case .keyUp:
-        if pasteDown && event.keyCode == KeyChord.pasteKey.QWERTYKeyCode {
-          pasteDown = false
-          AppState.shared.history.handlePasteStack()
-        }
-      default:
-        break
-      }
-    }
+    // Intentionally empty.
   }
 
   var id: UUID = UUID()

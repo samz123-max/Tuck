@@ -136,12 +136,13 @@ struct TuckGeneralSettingsView: View {
         TuckSettingsDivider()
 
         TuckSettingsRow(
-          icon: "arrow.down.doc",
-          title: "Paste automatically",
-          subtitle: "Paste an item as soon as you choose it."
+          icon: "hand.raised.fill",
+          title: "Permission-free copy",
+          subtitle: "Choosing an item copies it. Press ⌘V in the destination app."
         ) {
-          Defaults.Toggle(key: .pasteByDefault) { EmptyView() }
-            .labelsHidden()
+          Image(systemName: "checkmark.circle.fill")
+            .foregroundStyle(.green)
+            .accessibilityLabel("Enabled")
         }
       }
 
