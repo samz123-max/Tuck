@@ -99,6 +99,8 @@ struct TuckGeneralSettingsView: View {
   )
 
   @State private var updater = SoftwareUpdater()
+  @State private var showingAutomaticPasteRestartAlert = false
+  @Default(.pasteByDefault) private var pasteByDefault
 
   var body: some View {
     TuckSettingsPage(
@@ -136,13 +138,22 @@ struct TuckGeneralSettingsView: View {
         TuckSettingsDivider()
 
         TuckSettingsRow(
-          icon: "hand.raised.fill",
-          title: "Permission-free copy",
-          subtitle: "Choosing an item copies it. Press ⌘V in the destination app."
+          icon: pasteByDefault ? "arrow.down.doc.fill" : "hand.raised.fill",
+          title: "Paste automatically",
+          subtitle: pasteByDefault
+            ? "Optional. Tuck sends ⌘V after you choose an item."
+            : "Off by default. Choosing an item only copies it; press ⌘V yourself."
         ) {
-          Image(systemName: "checkmark.circle.fill")
-            .foregroundStyle(.green)
-            .accessibilityLabel("Enabled")
+          Defaults.Toggle(key: .pasteByDefault) { EmptyView() }
+            .labelsHidden()
+            .onChange(of: pasteByDefault) {
+              guard pasteByDefault, !PostEventAccess.isGranted else { return }
+
+              PostEventAccess.request()
+              DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                restartTuck()
+              }
+            }
         }
       }
 
@@ -167,6 +178,38 @@ struct TuckGeneralSettingsView: View {
           ) {
             Link("Open Settings", destination: notificationsURL)
           }
+        }
+      }
+    }
+    .alert(
+      "Restart Tuck to Finish Setup",
+      isPresented: $showingAutomaticPasteRestartAlert
+    ) {
+      Button("Restart Tuck") {
+        restartTuck()
+      }
+      Button("Later", role: .cancel) {}
+    } message: {
+      Text(
+        "After approving Automatic Paste in System Settings, restart Tuck so macOS applies the new permission. Copy-only mode continues to work without restarting."
+      )
+    }
+  }
+
+  private func restartTuck() {
+    let configuration = NSWorkspace.OpenConfiguration()
+    configuration.activates = true
+    configuration.createsNewApplicationInstance = true
+
+    NSWorkspace.shared.openApplication(
+      at: Bundle.main.bundleURL,
+      configuration: configuration
+    ) { _, error in
+      DispatchQueue.main.async {
+        if error == nil {
+          NSApp.terminate(nil)
+        } else {
+          showingAutomaticPasteRestartAlert = true
         }
       }
     }

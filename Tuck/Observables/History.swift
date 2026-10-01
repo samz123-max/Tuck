@@ -82,6 +82,12 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
 
   init() {
     Task {
+      for await _ in Defaults.updates(.pasteByDefault, initial: false) {
+        updateShortcuts()
+      }
+    }
+
+    Task {
       for await _ in Defaults.updates(.sortBy, initial: false) {
         try? await load()
       }
@@ -351,7 +357,11 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
 
     if modifierFlags.isEmpty {
       Clipboard.shared.copy(item.item, removeFormatting: Defaults[.removeFormattingByDefault])
-      AppState.shared.popup.close()
+      if Defaults[.pasteByDefault] {
+        AppState.shared.popup.close(after: Clipboard.shared.paste)
+      } else {
+        AppState.shared.popup.close()
+      }
     } else {
       switch HistoryItemAction(modifierFlags) {
       case .copy:
@@ -359,10 +369,10 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
         AppState.shared.popup.close()
       case .paste:
         Clipboard.shared.copy(item.item)
-        AppState.shared.popup.close()
+        AppState.shared.popup.close(after: Clipboard.shared.paste)
       case .pasteWithoutFormatting:
         Clipboard.shared.copy(item.item, removeFormatting: true)
-        AppState.shared.popup.close()
+        AppState.shared.popup.close(after: Clipboard.shared.paste)
       case .unknown:
         return
       }
