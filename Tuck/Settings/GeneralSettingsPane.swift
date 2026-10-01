@@ -151,7 +151,7 @@ struct TuckGeneralSettingsView: View {
 
               PostEventAccess.request()
               DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                restartTuck()
+                showingAutomaticPasteRestartAlert = true
               }
             }
         }
