@@ -28,7 +28,13 @@ Issues and pull requests are welcome. Maintenance, support, and feature work are
 
 ### Vertical Floating Window
 
-![Tuck's regular vertical Floating Window showing searchable clipboard history and a selected item's preview](Assets/Screenshots/clipboard-history.png)
+#### Compact history
+
+![Tuck's compact vertical Floating Window showing searchable clipboard history](Assets/Screenshots/vertical-window.png)
+
+#### Expanded preview
+
+![Tuck's vertical Floating Window expanded beside a selected item's preview](Assets/Screenshots/clipboard-history.png)
 
 ### Bottom Strip
 
