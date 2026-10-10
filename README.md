@@ -4,8 +4,6 @@
 
 Tuck is a native clipboard manager for macOS. It keeps a local history of copied items so they are easy to find, reuse, pin, preview, and paste.
 
-![Tuck showing searchable clipboard history alongside a selected item's preview](Assets/Screenshots/clipboard-history.png)
-
 Tuck is an independent fork of [Maccy](https://github.com/p0deje/Maccy) by Alex Rodionov and its contributors. It builds on Maccy's clipboard engine and codebase; it is not an official Maccy release. Tuck's product direction is to make that foundation feel friendlier, more modern, and more intuitive while retaining a focused native Mac experience.
 
 ## Status
