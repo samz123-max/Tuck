@@ -2,7 +2,9 @@
 
 **A happy little home for everything you copy.**
 
-Tuck is a native clipboard manager for macOS. It keeps a local history of copied items so they are easy to find, reuse, pin, preview, and paste.
+Tuck is a native clipboard manager for macOS, built in Swift with a modern SwiftUI interface and AppKit integration where deeper system and window control is needed. It keeps a local history of copied items so they are easy to find, reuse, pin, preview, and paste.
+
+Choose the focused vertical **Floating Window** or the wide, visual **Bottom Strip** along the desktop edge. Both interfaces share the same searchable history and keyboard-first workflow, while the Bottom Strip adds rich, source-aware cards for scanning more content at a glance. Tuck's design is tuned for the modern macOS 27 experience while retaining support for macOS 14 and later.
 
 Tuck is an independent fork of [Maccy](https://github.com/p0deje/Maccy) by Alex Rodionov and its contributors. It builds on Maccy's clipboard engine and codebase; it is not an official Maccy release. Tuck's product direction is to make that foundation feel friendlier, more modern, and more intuitive while retaining a focused native Mac experience.
 
@@ -14,15 +16,25 @@ Issues and pull requests are welcome. Maintenance, support, and feature work are
 
 ## Highlights
 
+- Choose between the compact vertical Floating Window and the near-edge-to-edge Bottom Strip.
 - Search and filter clipboard history across all items, text, links, and images.
 - Pin frequently used items and use keyboard shortcuts for fast access.
-- Preview copied content and paste it with or without formatting.
+- Preview copied content and paste it automatically or copy it for manual use, with or without formatting.
 - Configure history, appearance, shortcuts, and exclusions in native settings.
+- Browse and copy without Accessibility permission; grant it only when enabling automatic cross-app paste.
 - Keep clipboard classification and history on the Mac; Tuck adds no account, telemetry, cloud service, or runtime AI feature.
 
 ## Screenshots
 
+### Vertical Floating Window
+
+![Tuck's regular vertical Floating Window showing searchable clipboard history and a selected item's preview](Assets/Screenshots/clipboard-history.png)
+
+### Bottom Strip
+
 ![Tuck's Bottom Strip showing text, link, image, color, and note cards along the bottom of the desktop](Assets/Screenshots/bottom-strip.png)
+
+### Settings
 
 ![Tuck's General settings with launch, shortcut, paste, update, and notification controls](Assets/Screenshots/settings-general.png)
 
@@ -32,7 +44,7 @@ Requirements:
 
 - An Apple Silicon Mac
 - macOS 14 or later
-- Xcode 26 or later (currently validated with Xcode 26.6)
+- Xcode 26 or later (currently validated with Xcode 27.0 on macOS 27.0.1)
 - Internet access the first time Xcode resolves the public Swift Package dependencies
 
 Clone the repository, open `Tuck.xcodeproj` in Xcode, select the **Tuck** scheme and **My Mac**, then build and run.
