@@ -24,6 +24,8 @@ Issues and pull requests are welcome. Maintenance, support, and feature work are
 
 ## Screenshots
 
+![Tuck's Bottom Strip showing text, link, image, color, and note cards along the bottom of the desktop](Assets/Screenshots/bottom-strip.png)
+
 ![Tuck's General settings with launch, shortcut, paste, update, and notification controls](Assets/Screenshots/settings-general.png)
 
 ## Build from source
