@@ -258,6 +258,13 @@ class SearchTests: XCTestCase {
     XCTAssertNil(ClipboardCategory.classify([content(.fileURL), content(.png), content(.string)]))
     XCTAssertNil(ClipboardCategory.classify([]))
     XCTAssertNil(ClipboardCategory.classify([HistoryItemContent(type: "public.png")]))
+    XCTAssertEqual(
+      ClipboardCategory.classify([
+        HistoryItemContent(type: NSPasteboard.PasteboardType.png.rawValue, value: Data()),
+        content(.string, "Numbers cell")
+      ]),
+      .text
+    )
     XCTAssertNil(ClipboardCategory.classify([content(.init("custom.format"))]))
   }
 

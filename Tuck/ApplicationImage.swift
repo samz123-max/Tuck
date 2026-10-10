@@ -3,16 +3,31 @@ import Defaults
 import SwiftUI
 
 class ApplicationImage {
+  private struct AverageRGBA: Sendable {
+    let red: UInt8
+    let green: UInt8
+    let blue: UInt8
+    let alpha: UInt8
+  }
+
   fileprivate static let fallbackImage = NSImage(
     systemSymbolName: "questionmark.app.dashed",
     accessibilityDescription: nil
   )!
   private static let retryInterval: TimeInterval = 60 * 60
   private static let colorContext = CIContext(options: [.workingColorSpace: NSNull()])
+  private static let accentColorQueue: OperationQueue = {
+    let queue = OperationQueue()
+    queue.name = "app.tuck.clipboard.accent-colors"
+    queue.qualityOfService = .utility
+    queue.maxConcurrentOperationCount = 2
+    return queue
+  }()
 
   let bundleIdentifier: String?
   private var image: NSImage?
   private var accentColorCache: NSColor?
+  private var accentColorGenerationTask: Task<AverageRGBA?, Never>?
   private var lastChecked: Date?
   private var eventSource: (any DispatchSourceFileSystemObject)?
 
@@ -65,12 +80,16 @@ class ApplicationImage {
               source.cancel()
               self.image = nil
               self.accentColorCache = nil
+              self.accentColorGenerationTask?.cancel()
+              self.accentColorGenerationTask = nil
               self.lastChecked = nil
             } else if event.contains(.write) {
               // File was modified. Fetch new icon
               print("Modified", appURL.path)
               self.image = NSWorkspace.shared.icon(forFile: appURL.path)
               self.accentColorCache = nil
+              self.accentColorGenerationTask?.cancel()
+              self.accentColorGenerationTask = nil
             }
           }
         }
@@ -86,19 +105,43 @@ class ApplicationImage {
     return Self.fallbackImage
   }
 
-  var accentColor: NSColor {
-    if let accentColorCache {
-      return accentColorCache
+  @MainActor
+  func prepareAccentColor() {
+    guard accentColorCache == nil, accentColorGenerationTask == nil else { return }
+    guard let data = nsImage.tiffRepresentation else { return }
+
+    accentColorGenerationTask = Task {
+      await Self.averageRGBA(from: data)
+    }
+  }
+
+  @MainActor
+  func resolvedAccentColor() async -> NSColor {
+    if let accentColorCache { return accentColorCache }
+
+    prepareAccentColor()
+    guard let task = accentColorGenerationTask else { return .controlAccentColor }
+    guard let average = await task.value else {
+      accentColorGenerationTask = nil
+      return .controlAccentColor
     }
 
-    let resolved = Self.averageColor(of: nsImage) ?? .controlAccentColor
+    let resolved = Self.accentColor(from: average)
     accentColorCache = resolved
+    accentColorGenerationTask = nil
     return resolved
   }
 
-  private static func averageColor(of image: NSImage) -> NSColor? {
+  private nonisolated static func averageRGBA(from data: Data) async -> AverageRGBA? {
+    await withCheckedContinuation { continuation in
+      accentColorQueue.addOperation {
+        continuation.resume(returning: renderAverageRGBA(from: data))
+      }
+    }
+  }
+
+  private nonisolated static func renderAverageRGBA(from data: Data) -> AverageRGBA? {
     guard
-      let data = image.tiffRepresentation,
       let inputImage = CIImage(data: data),
       let filter = CIFilter(name: "CIAreaAverage")
     else { return nil }
@@ -117,13 +160,17 @@ class ApplicationImage {
       colorSpace: CGColorSpaceCreateDeviceRGB()
     )
 
-    let alpha = CGFloat(pixels[3]) / 255
-    guard alpha > 0.06 else { return nil }
+    return AverageRGBA(red: pixels[0], green: pixels[1], blue: pixels[2], alpha: pixels[3])
+  }
+
+  private static func accentColor(from average: AverageRGBA) -> NSColor {
+    let alpha = CGFloat(average.alpha) / 255
+    guard alpha > 0.06 else { return .controlAccentColor }
 
     let color = NSColor(
-      calibratedRed: min(1, CGFloat(pixels[0]) / 255 / alpha),
-      green: min(1, CGFloat(pixels[1]) / 255 / alpha),
-      blue: min(1, CGFloat(pixels[2]) / 255 / alpha),
+      calibratedRed: min(1, CGFloat(average.red) / 255 / alpha),
+      green: min(1, CGFloat(average.green) / 255 / alpha),
+      blue: min(1, CGFloat(average.blue) / 255 / alpha),
       alpha: 1
     )
     guard let rgb = color.usingColorSpace(.deviceRGB) else { return color }

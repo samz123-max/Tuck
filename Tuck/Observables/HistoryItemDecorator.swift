@@ -1,6 +1,7 @@
 import AppKit.NSWorkspace
 import Defaults
 import Foundation
+import ImageIO
 import Observation
 import Sauce
 
@@ -13,6 +14,13 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   static var previewImageSize: NSSize { NSScreen.forPopup?.visibleFrame.size ?? NSSize(width: 2048, height: 1536) }
   static var thumbnailImageSize: NSSize { NSSize(width: 340, height: Defaults[.imageMaxHeight]) }
   static let cardImageSize = NSSize(width: 440, height: 300)
+  private static let cardImageQueue: OperationQueue = {
+    let queue = OperationQueue()
+    queue.name = "app.tuck.clipboard.card-images"
+    queue.qualityOfService = .userInitiated
+    queue.maxConcurrentOperationCount = 2
+    return queue
+  }()
 
   let id = UUID()
   let category: ClipboardCategory?
@@ -27,7 +35,13 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   }
   var shortcuts: [KeyShortcut] = []
 
-  var application: String? {
+  let application: String?
+  let fileURLs: [URL]
+  let imagePixelSize: NSSize?
+  let previewText: String
+  let cardColorImage: NSImage?
+
+  private static func applicationName(for item: HistoryItem) -> String? {
     if item.universalClipboard {
       return "iCloud"
     }
@@ -41,15 +55,25 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     return url.deletingPathExtension().lastPathComponent
   }
 
-  var hasImage: Bool { item.image != nil }
+  private static func imagePixelSize(for item: HistoryItem) -> NSSize? {
+    let sourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+    guard
+      let data = item.imageData,
+      let source = CGImageSourceCreateWithData(data as CFData, sourceOptions),
+      let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+      let width = properties[kCGImagePropertyPixelWidth] as? NSNumber,
+      let height = properties[kCGImagePropertyPixelHeight] as? NSNumber
+    else { return nil }
+
+    return NSSize(width: width.doubleValue, height: height.doubleValue)
+  }
+
+  var hasImage: Bool { imagePixelSize != nil }
 
   var previewImageGenerationTask: Task<(), Error>?
   var thumbnailImageGenerationTask: Task<(), Error>?
   var cardImageGenerationTask: Task<(), Error>?
   var previewImage: NSImage?
-  var previewText: String {
-    item.previewableText
-  }
   var thumbnailImage: NSImage?
   var cardImage: NSImage?
   var applicationImage: ApplicationImage
@@ -79,8 +103,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   // Describe the complete item independently of its potentially truncated visual content.
   var accessibilityLabel: String {
     var parts: [String] = []
-    if hasImage, let image = item.image {
-      let size = image.pixelSize
+    if let size = imagePixelSize {
       parts.append(String(format: NSLocalizedString("history_item_image_accessibility_label_no_app", comment: ""), Int(size.width), Int(size.height)))
     } else {
       parts.append(title)
@@ -102,6 +125,11 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     self.category = ClipboardCategory.classify(item.contents)
     self.shortcuts = shortcuts
     self.title = item.title
+    self.application = Self.applicationName(for: item)
+    self.fileURLs = item.fileURLs
+    self.imagePixelSize = Self.imagePixelSize(for: item)
+    self.previewText = item.previewableText
+    self.cardColorImage = ColorImage.from(item.title.trimmingCharacters(in: .whitespacesAndNewlines))
     self.applicationImage = ApplicationImageCache.shared.getImage(item: item)
 
     synchronizeItemPin()
@@ -142,11 +170,16 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
 
   @MainActor
   func ensureCardImage() {
-    guard item.image != nil, cardImage == nil, cardImageGenerationTask == nil else {
-      return
-    }
+    guard cardImage == nil, cardImageGenerationTask == nil, let data = item.imageData else { return }
+
     cardImageGenerationTask = Task { [weak self] in
-      self?.generateCardImage()
+      let image = await Self.downsampledCardImage(from: data)
+
+      guard !Task.isCancelled else { return }
+      if let image {
+        self?.cardImage = NSImage(cgImage: image, size: .zero)
+      }
+      self?.cardImageGenerationTask = nil
     }
   }
 
@@ -165,6 +198,9 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     thumbnailImageGenerationTask?.cancel()
     previewImageGenerationTask?.cancel()
     cardImageGenerationTask?.cancel()
+    thumbnailImageGenerationTask = nil
+    previewImageGenerationTask = nil
+    cardImageGenerationTask = nil
     thumbnailImage?.recache()
     previewImage?.recache()
     cardImage?.recache()
@@ -190,12 +226,26 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     previewImage = image.resized(to: HistoryItemDecorator.previewImageSize)
   }
 
-  @MainActor
-  private func generateCardImage() {
-    guard let image = item.image else {
-      return
+  private nonisolated static func downsampledCardImage(from data: Data) async -> CGImage? {
+    await withCheckedContinuation { continuation in
+      cardImageQueue.addOperation {
+        continuation.resume(returning: makeDownsampledCardImage(from: data))
+      }
     }
-    cardImage = image.resized(to: Self.cardImageSize)
+  }
+
+  private nonisolated static func makeDownsampledCardImage(from data: Data) -> CGImage? {
+    let sourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+    guard let source = CGImageSourceCreateWithData(data as CFData, sourceOptions) else { return nil }
+
+    let thumbnailOptions = [
+      kCGImageSourceCreateThumbnailFromImageAlways: true,
+      kCGImageSourceCreateThumbnailWithTransform: true,
+      kCGImageSourceShouldCacheImmediately: true,
+      kCGImageSourceThumbnailMaxPixelSize: max(cardImageSize.width, cardImageSize.height)
+    ] as CFDictionary
+
+    return CGImageSourceCreateThumbnailAtIndex(source, 0, thumbnailOptions)
   }
 
   @MainActor
@@ -206,7 +256,9 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
 
   func highlight(_ query: String, _ ranges: [Range<String.Index>]) {
     guard !query.isEmpty, !title.isEmpty else {
-      attributedTitle = nil
+      if attributedTitle != nil {
+        attributedTitle = nil
+      }
       return
     }
 
@@ -228,7 +280,9 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
       }
     }
 
-    attributedTitle = attributedString
+    if attributedTitle != attributedString {
+      attributedTitle = attributedString
+    }
   }
 
   @MainActor

@@ -9,26 +9,17 @@ struct BottomStripView: View {
   @Environment(\.scenePhase) private var scenePhase
   @Default(.pinTo) private var pinTo
 
-  private var pinnedItems: [HistoryItemDecorator] {
-    appState.history.pinnedItems.filter(\.isVisible)
-  }
-
-  private var unpinnedItems: [HistoryItemDecorator] {
-    appState.history.unpinnedItems.filter(\.isVisible)
-  }
-
-  private var resultCount: Int {
-    pinnedItems.count + unpinnedItems.count
-  }
-
   var body: some View {
+    let pinnedItems = appState.history.pinnedItems.filter(\.isVisible)
+    let unpinnedItems = appState.history.unpinnedItems.filter(\.isVisible)
+
     VStack(spacing: 0) {
-      chrome
+      chrome(resultCount: pinnedItems.count + unpinnedItems.count)
 
       Divider()
         .opacity(0.38)
 
-      cardRail
+      cardRail(pinnedItems: pinnedItems, unpinnedItems: unpinnedItems)
     }
     .onAppear {
       searchFocused = true
@@ -49,7 +40,7 @@ struct BottomStripView: View {
     }
   }
 
-  private var chrome: some View {
+  private func chrome(resultCount: Int) -> some View {
     HStack(spacing: 12) {
       HStack(spacing: 8) {
         Image(systemName: "tray.full.fill")
@@ -155,23 +146,32 @@ struct BottomStripView: View {
     .padding(.vertical, 11)
   }
 
-  private var cardRail: some View {
+  private func cardRail(
+    pinnedItems: [HistoryItemDecorator],
+    unpinnedItems: [HistoryItemDecorator]
+  ) -> some View {
     ScrollView(.horizontal) {
       ScrollViewReader { proxy in
         LazyHStack(spacing: 10) {
           if pinTo == .top {
             cards(pinnedItems)
-            sectionDividerIfNeeded
+            sectionDividerIfNeeded(
+              hasPinnedItems: !pinnedItems.isEmpty,
+              hasUnpinnedItems: !unpinnedItems.isEmpty
+            )
           }
 
           cards(unpinnedItems)
 
           if pinTo == .bottom {
-            sectionDividerIfNeeded
+            sectionDividerIfNeeded(
+              hasPinnedItems: !pinnedItems.isEmpty,
+              hasUnpinnedItems: !unpinnedItems.isEmpty
+            )
             cards(pinnedItems)
           }
 
-          if resultCount == 0 {
+          if pinnedItems.isEmpty && unpinnedItems.isEmpty {
             emptyState
           }
         }
@@ -195,15 +195,34 @@ struct BottomStripView: View {
 
   @ViewBuilder
   private func cards(_ items: [HistoryItemDecorator]) -> some View {
-    ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-      BottomStripCard(item: item, index: index)
+    ForEach(items) { item in
+      BottomStripCard(item: item)
         .id(item.id)
+        .onAppear {
+          prefetchCardImages(around: item, in: items)
+        }
+    }
+  }
+
+  private func prefetchCardImages(
+    around item: HistoryItemDecorator,
+    in items: [HistoryItemDecorator]
+  ) {
+    guard let index = items.firstIndex(of: item) else { return }
+
+    let lowerBound = max(items.startIndex, index - 1)
+    let upperBound = min(items.index(before: items.endIndex), index + 3)
+    for candidate in items[lowerBound...upperBound] where candidate.category == .images {
+      candidate.ensureCardImage()
     }
   }
 
   @ViewBuilder
-  private var sectionDividerIfNeeded: some View {
-    if !pinnedItems.isEmpty && !unpinnedItems.isEmpty {
+  private func sectionDividerIfNeeded(
+    hasPinnedItems: Bool,
+    hasUnpinnedItems: Bool
+  ) -> some View {
+    if hasPinnedItems && hasUnpinnedItems {
       VStack(spacing: 7) {
         Image(systemName: "pin.fill")
           .font(.caption)
@@ -240,7 +259,9 @@ struct BottomStripView: View {
   private func activateSelection() {
     appState.navigator.isKeyboardNavigating = true
     if appState.navigator.leadHistoryItem?.isVisible != true {
-      appState.navigator.select(item: unpinnedItems.first ?? pinnedItems.first)
+      let firstUnpinnedItem = appState.history.unpinnedItems.first(where: \.isVisible)
+      let firstPinnedItem = appState.history.pinnedItems.first(where: \.isVisible)
+      appState.navigator.select(item: firstUnpinnedItem ?? firstPinnedItem)
     }
     appState.preview.cancelAutoOpen()
     appState.preview.state = .closed
@@ -279,9 +300,9 @@ struct BottomStripPreviewSurface: View {
 
 private struct BottomStripCard: View {
   @Bindable var item: HistoryItemDecorator
-  let index: Int
 
   @State private var appState = AppState.shared
+  @State private var appBandAccentColor = NSColor.controlAccentColor
   @State private var isHovering = false
 
   private enum Kind {
@@ -289,11 +310,11 @@ private struct BottomStripCard: View {
   }
 
   private var colorImage: NSImage? {
-    ColorImage.from(item.title.trimmingCharacters(in: .whitespacesAndNewlines))
+    item.cardColorImage
   }
 
   private var kind: Kind {
-    if !item.item.fileURLs.isEmpty { return .file }
+    if !item.fileURLs.isEmpty { return .file }
     if item.category == .images { return .image }
     if item.category == .links { return .link }
     if colorImage != nil { return .color }
@@ -303,7 +324,7 @@ private struct BottomStripCard: View {
   private var kindLabel: String {
     switch kind {
     case .image: "Image"
-    case .file: item.item.fileURLs.count == 1 ? "File" : "Files"
+    case .file: item.fileURLs.count == 1 ? "File" : "Files"
     case .link: "Link"
     case .color: "Color"
     case .text: "Text"
@@ -379,10 +400,8 @@ private struct BottomStripCard: View {
     .accessibilityAction(.default, selectCard)
     .help("Click to select. Double-click to copy or paste.")
     .onHover { isHovering = $0 }
-    .onAppear {
-      if kind == .image {
-        item.ensureCardImage()
-      }
+    .task(id: item.applicationImage.bundleIdentifier) {
+      appBandAccentColor = await item.applicationImage.resolvedAccentColor()
     }
     .contextMenu {
       Button(item.isPinned ? "Unpin" : "Pin") {
@@ -410,8 +429,8 @@ private struct BottomStripCard: View {
     ZStack(alignment: .trailing) {
       LinearGradient(
         colors: [
-          Color(nsColor: item.applicationImage.accentColor).opacity(item.isSelected ? 0.38 : 0.28),
-          Color(nsColor: item.applicationImage.accentColor).opacity(item.isSelected ? 0.23 : 0.15)
+          Color(nsColor: appBandAccentColor).opacity(item.isSelected ? 0.38 : 0.28),
+          Color(nsColor: appBandAccentColor).opacity(item.isSelected ? 0.23 : 0.15)
         ],
         startPoint: .leading,
         endPoint: .trailing
@@ -473,7 +492,7 @@ private struct BottomStripCard: View {
       .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
 
     case .file:
-      let urls = item.item.fileURLs
+      let urls = item.fileURLs
       HStack(spacing: 11) {
         if let url = urls.first {
           Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))

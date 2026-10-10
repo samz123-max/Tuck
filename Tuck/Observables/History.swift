@@ -537,7 +537,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
 
   private func updateUnpinnedShortcuts() {
     let visibleUnpinnedItems = unpinnedItems.filter(\.isVisible)
-    for item in visibleUnpinnedItems {
+    for item in visibleUnpinnedItems where !item.shortcuts.isEmpty {
       item.shortcuts = []
     }
 

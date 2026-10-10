@@ -116,14 +116,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       Task { @MainActor [weak self] in
         try? await History.shared.loadIfNeeded()
 
-        // Prime only the cards likely to be on the first screen. Application
-        // images are shared by bundle identifier, so this also warms repeated
-        // source icons without processing the entire history.
+        // Prime the cards likely to be on the first screen in All and each
+        // category. Work is bounded by the background queues, and application
+        // images are shared by bundle identifier.
+        let initialItems = Array(History.shared.items.prefix(12))
+        let initialCategoryItems = ClipboardCategory.allCases
+          .filter { $0 != .all }
+          .flatMap { category in
+            Array(
+              History.shared.items.lazy
+                .filter { $0.category == category }
+                .prefix(8)
+            )
+          }
+        var warmedItems = Set<UUID>()
         var warmedApplications = Set<ObjectIdentifier>()
-        for item in History.shared.items.prefix(12) {
+        for item in initialItems + initialCategoryItems where warmedItems.insert(item.id).inserted {
           let applicationImage = item.applicationImage
           if warmedApplications.insert(ObjectIdentifier(applicationImage)).inserted {
-            _ = applicationImage.accentColor
+            applicationImage.prepareAccentColor()
           }
           item.ensureCardImage()
         }

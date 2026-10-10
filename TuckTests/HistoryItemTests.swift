@@ -62,6 +62,16 @@ class HistoryItemTests: XCTestCase {
     XCTAssertEqual(item.title, "")
   }
 
+  func testImageDataSkipsEmptyAdvertisedRepresentation() {
+    let image = NSImage(named: "NSBluetoothTemplate")!
+    let item = HistoryItem(contents: [
+      HistoryItemContent(type: NSPasteboard.PasteboardType.png.rawValue, value: Data()),
+      HistoryItemContent(type: NSPasteboard.PasteboardType.tiff.rawValue, value: image.tiffRepresentation)
+    ])
+
+    XCTAssertEqual(item.imageData, image.tiffRepresentation)
+  }
+
   func testFile() {
     let url = URL(fileURLWithPath: "/tmp/foo.bar")
     let item = historyItem(url)

@@ -159,7 +159,10 @@ class HistoryItem {
 
   var imageData: Data? {
     var data: Data?
-    data = contentData(Self.imageTypes)
+    data = contents.first(where: { content in
+      Self.imageTypes.contains(NSPasteboard.PasteboardType(content.type)) &&
+        content.value?.isEmpty == false
+    })?.value
     if data == nil, universalClipboardImage, let url = fileURLs.first {
       data = try? Data(contentsOf: url)
     }

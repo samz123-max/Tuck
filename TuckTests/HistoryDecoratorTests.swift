@@ -62,6 +62,9 @@ class HistoryItemDecoratorTests: XCTestCase {
   func testImage() {
     let image = NSImage(named: "TuckPocket")!
     let itemDecorator = historyItemDecorator(image)
+    XCTAssertTrue(itemDecorator.hasImage)
+    XCTAssertGreaterThan(itemDecorator.imagePixelSize?.width ?? 0, 0)
+    XCTAssertGreaterThan(itemDecorator.imagePixelSize?.height ?? 0, 0)
     itemDecorator.sizeImages()
     XCTAssertEqual(itemDecorator.title, "")
     XCTAssertEqual(itemDecorator.previewImage!.size, image.size)
@@ -74,6 +77,21 @@ class HistoryItemDecoratorTests: XCTestCase {
     let itemDecorator = historyItemDecorator(image)
     itemDecorator.sizeImages()
     XCTAssertEqual(itemDecorator.thumbnailImage!.size, NSSize(width: 40, height: 40))
+  }
+
+  func testCardImageIsDownsampledToTheRailPixelBudget() async throws {
+    let image = NSImage(named: "NSApplicationIcon")!
+    let itemDecorator = historyItemDecorator(image)
+
+    itemDecorator.ensureCardImage()
+    let generationTask = itemDecorator.cardImageGenerationTask
+    _ = await generationTask?.result
+
+    let cardImage = try XCTUnwrap(itemDecorator.cardImage)
+    XCTAssertLessThanOrEqual(
+      max(cardImage.pixelSize.width, cardImage.pixelSize.height),
+      max(HistoryItemDecorator.cardImageSize.width, HistoryItemDecorator.cardImageSize.height)
+    )
   }
 
   func testFile() {

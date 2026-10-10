@@ -16,7 +16,9 @@ enum ClipboardCategory: String, CaseIterable, Identifiable {
   }
 
   static func classify(_ contents: [HistoryItemContent]) -> ClipboardCategory? {
-    let types = Set(contents.filter { $0.value != nil }.map(\.type))
+    // Some apps advertise representations they cannot actually provide.
+    // Numbers, for example, places a zero-byte PNG beside valid cell text.
+    let types = Set(contents.filter { $0.value?.isEmpty == false }.map(\.type))
     // A copied file may carry a thumbnail or text fallback; it is still a file.
     if types.contains(NSPasteboard.PasteboardType.fileURL.rawValue) { return nil }
     if StorageType.images.types.contains(where: { types.contains($0.rawValue) }) { return .images }
